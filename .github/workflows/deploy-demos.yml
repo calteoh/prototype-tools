@@ -1,0 +1,86 @@
+name: Deploy tool demos to Pages
+
+# Publishes every tool's static demo to one GitHub Pages site, each under its
+# own subfolder, so the site scales as more tools are added:
+#   https://calteoh.github.io/prototype-tools/                 ← index
+#   https://calteoh.github.io/prototype-tools/device-frame-kit/ ← this tool
+#
+# To add a tool later: add a "Build <tool>" + "Stage <tool>" pair below (its
+# NEXT_PUBLIC_BASE_PATH must match its subfolder), and add a link to the index.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/**"
+      - ".github/workflows/deploy-demos.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: "tools/**/pnpm-lock.yaml"
+
+      # ── device-frame-kit ──────────────────────────────────────────────
+      - name: Build device-frame-kit
+        working-directory: tools/device-frame-kit
+        run: pnpm install --frozen-lockfile && pnpm build
+        env:
+          NEXT_PUBLIC_BASE_PATH: /prototype-tools/device-frame-kit
+      - name: Stage device-frame-kit
+        run: |
+          mkdir -p _site/device-frame-kit
+          cp -r tools/device-frame-kit/out/. _site/device-frame-kit/
+
+      # ── (future tools: copy the two steps above, new subfolder + basePath) ──
+
+      - name: Index page + Jekyll opt-out
+        run: |
+          touch _site/.nojekyll   # serve the _next/ folder (Jekyll skips _-dirs)
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Prototype tools — demos</title>
+          <style>
+            body { font: 16px/1.5 -apple-system, system-ui, sans-serif; max-width: 40rem; margin: 4rem auto; padding: 0 1.5rem; }
+            h1 { font-size: 1.4rem; }
+            a { color: #1b1b1b; }
+          </style>
+          <h1>Prototype tools — demos</h1>
+          <ul>
+            <li><a href="./device-frame-kit/">Device Frame Kit</a></li>
+          </ul>
+          HTML
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
