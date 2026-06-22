@@ -1,0 +1,28 @@
+{
+  "name": "device-frame-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Wrap any App-Router Next.js prototype in a realistic iPhone + iOS 26 Safari frame for design reviews.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/calteoh/prototype-tools.git",
+    "directory": "tools/device-frame-kit"
+  },
+  "scripts": {
+    "dev": "next dev -p 3050",
+    "build": "next build",
+    "preview": "next build && pnpm dlx serve out -l 3051"
+  },
+  "dependencies": {
+    "next": "15.5.15",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}

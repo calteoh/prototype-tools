@@ -1,0 +1,290 @@
+/*
+ * All device-frame chrome styling. Plain CSS Module so the kit works in any
+ * Next.js project regardless of its Tailwind/PostCSS setup. Dynamic values
+ * (device dimensions, bar heights, config colors) are inline styles.
+ */
+
+/* ---------- Host layer (the desktop page around the phone) ---------- */
+
+.host {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 32px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro", system-ui, sans-serif;
+}
+
+.shell {
+  position: relative;
+  flex: none;
+  /* Contain the phone's internal z-indexes (status bar, Safari chrome) so they
+     can't paint over the host-level menu / QR toggle. */
+  isolation: isolate;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.screen {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+
+.iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+
+/* ---------- Simulated iOS status bar ---------- */
+
+.statusBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 59px;
+  z-index: 30;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 17px 27px 0 33px;
+  color: #000;
+}
+
+.statusTime {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.statusIsland {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 125px;
+  height: 37px;
+  border-radius: 19px;
+  background: #000;
+}
+
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+}
+
+/* ---------- iOS 26 "Liquid Glass" floating Safari chrome ----------
+ * Floating glass pills over a full-height iframe; the page scrolls beneath, so
+ * backdrop-filter frosts the live content. Geometry matches the reference
+ * Figma (keep in sync with constants.ts). The region spans the bottom; only
+ * the pills capture pointer events so content stays interactive between them. */
+
+.safariRegion {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 150px; /* SAFARI_FADE_H */
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* Contrast scrim: transparent at the top, light toward the bottom edge. */
+.safariFade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 55%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+}
+
+/* Shared Liquid Glass material. */
+.circleBtn,
+.searchBar {
+  background: rgba(250, 250, 250, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 2px 40px rgba(0, 0, 0, 0.1);
+  color: #1b1b1b;
+}
+
+/* Flanking buttons — absolutely placed so the center bar can morph past them;
+   they scale + fade away on scroll (geometry comes from inline styles). */
+.circleBtn {
+  position: absolute;
+  width: 48px; /* SAFARI_PILL_H */
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+}
+
+/* Persistent center bar — width/height/bottom/radius animate via inline px so
+   it morphs (not cross-fades) between the address bar and the compact pill.
+   Always horizontally centered; the icons are absolute so the domain stays
+   centered as the bar shrinks. */
+.searchBar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  font-family: inherit;
+}
+
+.searchIconLeft,
+.searchIconRight {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+}
+
+.searchIconLeft {
+  left: 14px;
+}
+
+.searchIconRight {
+  right: 14px;
+}
+
+.searchDomain {
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  color: #1b1b1b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Host tools: Pages drawer + QR toggle ---------- */
+
+/* Square icon button — shared by the Pages and QR toggles so they're identical. */
+.iconButton {
+  padding: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  color: #737373;
+  cursor: pointer;
+  transition: opacity 0.3s ease-out;
+}
+
+.iconButton:hover {
+  opacity: 0.9;
+}
+
+.iconButton svg {
+  display: block;
+}
+
+.pageNav {
+  position: fixed;
+  left: 32px;
+  top: 32px;
+  z-index: 50; /* above the phone shell + its chrome */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pageToggle {
+  composes: iconButton;
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.drawerSection {
+  padding: 10px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #a3a3a3;
+}
+
+.drawerItem {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  color: #404040;
+  cursor: pointer;
+  transition: background 0.15s ease-out;
+}
+
+.drawerItem:hover {
+  background: #f5f5f5;
+}
+
+.drawerItemActive {
+  background: #171717;
+  color: #fff;
+}
+
+.drawerItemActive:hover {
+  background: #171717;
+}
+
+.qrToggle {
+  composes: iconButton;
+  position: fixed;
+  right: 32px;
+  top: 32px;
+  z-index: 50; /* above the phone shell + its chrome */
+}
+
+/* ---------- Fake touch cursor (simulateTouch) ---------- */
+
+.cursor {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  width: 36px;
+  height: 36px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: transform 0.15s ease-out, background 0.15s ease-out, opacity 0.15s ease-out;
+}

@@ -1,0 +1,278 @@
+/* Demo-app styles only — the kit itself ships its own CSS Module.
+ *
+ * Visual system: a clean, soft modernist dashboard (energy-app vibe). Rounded
+ * off-white cards, generous whitespace, one warm yellow accent. Every example
+ * is TEXT-FREE — content is rendered as neutral "ghost" placeholder shapes, so
+ * the examples read purely as UI structure.
+ */
+
+:root {
+  --bg: #ffffff;
+  --card: #f0f1f3;
+  --card-2: #eceef0;
+  --accent: #f4e67d;
+
+  --g-faint: #e4e7ea;
+  --g-soft: #d3d8dc;
+  --g-mid: #bfc5cb;
+  --g-strong: #a6adb4;
+
+  /* ghost shapes sitting on the yellow accent read as darker forms */
+  --g-on-accent: rgba(20, 18, 0, 0.16);
+  --g-on-accent-strong: rgba(20, 18, 0, 0.26);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Solid fill behind the status bar — opaque band over the safe-area-top zone
+   so scrolling content cuts off cleanly beneath it, like real iOS Safari (the
+   host status-bar glyphs render in a separate layer above this). */
+.demo-statusfill {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--df-safe-area-top, env(safe-area-inset-top));
+  z-index: 30;
+  background: var(--bg);
+}
+
+/* ---------- Ghost shape primitives ---------- */
+
+.gh {
+  background: var(--g-soft);
+  border-radius: 7px;
+}
+.gh-strong {
+  background: var(--g-mid);
+}
+.gh-pill {
+  background: var(--g-soft);
+  border-radius: 999px;
+}
+.gh-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--g-mid);
+}
+
+.card--accent .gh,
+.card--accent .gh-pill {
+  background: var(--g-on-accent);
+}
+.card--accent .gh-strong {
+  background: var(--g-on-accent-strong);
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px;
+}
+.card--accent {
+  background: var(--accent);
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* ---------- Home: collapsing sticky header ---------- */
+
+.screen {
+  padding: 0 20px;
+}
+
+.demo-stickyhead {
+  position: sticky;
+  top: var(--df-safe-area-top, env(safe-area-inset-top));
+  z-index: 10;
+  overflow: hidden;
+  background: var(--bg);
+  height: 92px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  transition: height 0.28s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.demo-stickyhead[data-collapsed="true"] {
+  height: 56px;
+}
+
+.demo-stickyhead-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.demo-stickyhead-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+/* the subtitle ghost fades out as the header collapses */
+.demo-stickyhead-sub {
+  transition: opacity 0.2s ease-out;
+}
+.demo-stickyhead[data-collapsed="true"] .demo-stickyhead-sub {
+  opacity: 0;
+}
+
+/* small logo ghost (cluster of bars, top-right) */
+.demo-logo {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+}
+.demo-logo span {
+  width: 3px;
+  background: var(--g-strong);
+  border-radius: 2px;
+}
+
+/* ---------- Home: scrolling dashboard ---------- */
+
+.demo-feed {
+  padding-top: var(--df-safe-area-top, env(safe-area-inset-top));
+  /* clear the fixed tab bar */
+  padding-bottom: calc(96px + var(--df-safe-area-bottom, env(safe-area-inset-bottom)));
+}
+
+.demo-hero {
+  padding: 28px 20px 18px;
+}
+.demo-hero-value {
+  height: 104px;
+  border-radius: 20px;
+  background: var(--g-mid);
+}
+
+.demo-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 20px;
+}
+.demo-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ---------- Fixed bottom tab bar — rides with the Safari chrome ---------- */
+
+.demo-tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding: 14px 18px 0;
+  padding-bottom: calc(14px + var(--df-safe-area-bottom, env(safe-area-inset-bottom)));
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--g-faint);
+}
+.demo-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+
+/* ---------- Gallery: inner-scroller grid of soft cards ---------- */
+
+.demo-gallery {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+.demo-gallery-scroller {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  /* the heading + grid scroll in flow; clear the status bar at the top */
+  padding-top: calc(var(--df-safe-area-top, env(safe-area-inset-top)) + 20px);
+  padding-bottom: calc(20px + var(--df-safe-area-bottom, env(safe-area-inset-bottom)));
+}
+/* heading ghost, inline above the grid */
+.demo-gallery-heading {
+  margin-bottom: 20px;
+}
+.demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+/* just the outer box — no interior detail */
+.demo-grid-tile {
+  aspect-ratio: 1 / 1;
+  background: var(--card);
+  border-radius: 18px;
+}
+
+/* a simple sticky header used by Gallery / Carousel */
+.demo-head {
+  position: sticky;
+  top: var(--df-safe-area-top, env(safe-area-inset-top));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 20px;
+  background: var(--bg);
+}
+
+/* ---------- Carousel ---------- */
+
+.demo-carousel {
+  margin-top: 8px;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.demo-carousel-track {
+  display: flex;
+  gap: 14px;
+  padding: 0 20px;
+  will-change: transform;
+}
+.demo-carousel-slide {
+  flex: none;
+  width: 256px;
+  height: 360px;
+  border-radius: 22px;
+  background: var(--card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.demo-carousel-slide .gh-icon {
+  margin-top: auto;
+}
