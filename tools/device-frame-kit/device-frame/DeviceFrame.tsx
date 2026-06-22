@@ -14,17 +14,8 @@ import { StatusBar } from "./components/StatusBar";
 import { SafariBar } from "./components/SafariBar";
 import { PageNav, normalizePath } from "./components/PageNav";
 import { QrToggle } from "./components/QrToggle";
-import dynamic from "next/dynamic";
+import { ConfigPanel } from "./components/ConfigPanel";
 import styles from "./styles/device-frame.module.css";
-
-// Dev-only config panel, loaded via a gated dynamic import. The
-// process.env.NODE_ENV ternary lets the bundler drop the import() (and the
-// whole ConfigPanel + serializer chunk) from production — a NODE_ENV check at
-// the render site alone would keep the dead code in the shipped bundle.
-const ConfigPanel =
-  process.env.NODE_ENV === "development"
-    ? dynamic(() => import("./components/ConfigPanel").then((m) => m.ConfigPanel), { ssr: false })
-    : null;
 
 /*
  * DeviceFrame — wrap your root layout's children with this component.
@@ -35,10 +26,11 @@ const ConfigPanel =
  * renders children untouched, so none of the simulation ever reaches an
  * actual device.
  *
- * Options live in ./device-frame.config.ts. In development that file seeds a
- * live, in-memory copy that the hidden config panel (⇧⌘. or ?config=1) can
- * tweak and serialize back to the file. The panel is dev-only and never ships
- * in the exported build.
+ * Options live in ./device-frame.config.ts. That file seeds a live, in-memory
+ * copy that the hidden config panel (⇧⌘. or ?config=1) can tweak and serialize
+ * back to the file. The panel is available in every environment — including the
+ * deployed demo — so settings can be adjusted live during a presentation; it
+ * only ever appears when you trigger it.
  */
 export function DeviceFrame({ children }: { children: React.ReactNode }) {
   // The file config is the seed; in dev the panel mutates this in-memory copy
@@ -144,12 +136,12 @@ export function DeviceFrame({ children }: { children: React.ReactNode }) {
     }
   }, [mode, chrome.state, settings.browserChrome]);
 
-  // Host-document-only (never inside the embed iframe). ConfigPanel is null in
-  // production builds, so this is a no-op there.
-  const panel =
-    ConfigPanel && !embedded ? (
-      <ConfigPanel settings={settings} onChange={setSettings} seed={config} />
-    ) : null;
+  // Host-document-only (never inside the embed iframe). Available in every
+  // environment — hidden behind the shortcut / ?config=1 — so settings can be
+  // tweaked live even on the deployed demo.
+  const panel = !embedded ? (
+    <ConfigPanel settings={settings} onChange={setSettings} seed={config} />
+  ) : null;
 
   if (mode === "raw") {
     return (

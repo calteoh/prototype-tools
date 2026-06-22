@@ -2,6 +2,8 @@
 
 Show your mobile-web prototype inside a realistic iPhone frame — on any desktop browser.
 
+**▶ [Live demo](https://calteoh.github.io/prototype-tools/device-frame-kit/)** — try it in your browser (open on a desktop-width window to see the phone frame).
+
 Built for design reviews: present from your laptop, screen-share on calls, or send a link so people can experience a mobile-first design without picking up their phone. On an **actual phone, none of this appears** — the prototype renders normally, full-screen.
 
 What you get around your prototype:
@@ -98,14 +100,14 @@ Run your project, open it on a desktop browser — your prototype is in the phon
 
 ## Settings panel (no code needed)
 
-You don't have to edit any files to change how the phone looks. While the project is running on your computer (the preview you see at a `localhost` address in your browser), you can open a settings panel and change everything by clicking.
+You don't have to edit any files to change how the phone looks. You can open a settings panel and change everything by clicking — both in the version running on your computer **and on the live/deployed demo**, so you can even make last-minute tweaks while presenting.
 
 ### Opening the panel
 
 There's **no button on screen** for it on purpose — that keeps the phone clean when you're presenting. Open it one of two ways:
 
 - **Keyboard shortcut:** hold **Shift + Command + . (period)** on a Mac, or **Shift + Ctrl + .** on Windows. Press the same keys again to close it. (Or press **Esc** to close.)
-- **Web address:** click in your browser's address bar, add **`?config=1`** to the end of the address, and press Enter. For example: `localhost:3050/?config=1`.
+- **Web address:** click in your browser's address bar, add **`?config=1`** to the end of the address, and press Enter. Works on the local preview (`localhost:3050/?config=1`) and on the live demo (`…/device-frame-kit/?config=1`).
 
 The panel opens in the **bottom-right corner**.
 
@@ -113,7 +115,7 @@ The panel opens in the **bottom-right corner**.
 
 Use the controls to change the phone size, turn the frame / status bar / notch / Safari bar on or off, pick the background and frame colours, and toggle the presenter tools. **Everything updates instantly** so you can see exactly what you'll get.
 
-These changes are temporary previews — they only live in your browser until you save them (next step).
+These changes are temporary previews — they live in your browser until you reload, whether you're on the local preview or the live demo. To keep them, follow the save step below. (On the live demo you can't edit files directly — click **Copy config**, then paste it into the project file back in your editor.)
 
 ### Saving your changes for the whole team
 
@@ -127,7 +129,7 @@ When the phone looks the way you want:
 
 ### Good to know
 
-The settings panel only exists in the local preview. It is **completely removed** from the shared/published version of the prototype, so it can never accidentally show up in front of a client.
+The panel is available everywhere the prototype runs — the local preview **and** the deployed demo — so you can adjust things on the spot during a presentation. It has no on-screen button and only opens via the shortcut or `?config=1`, so your audience never sees it unless you open it. (If you ever need a client-facing build with the panel fully disabled, that's a one-line change — ask Claude for a `configPanel: false` option.)
 
 ---
 

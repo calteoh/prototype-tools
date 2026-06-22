@@ -9,9 +9,9 @@ a package.
 
 ## Tools
 
-| Tool | What it does |
-| --- | --- |
-| [`device-frame-kit`](tools/device-frame-kit/) | Wrap any App-Router Next.js prototype in a realistic iPhone + iOS 26 "Liquid Glass" Safari frame — status bar, collapsing Safari bar, a Pages quick-jump drawer, and a QR code to open it on a real phone. On an actual phone it renders full-screen with no frame. |
+| Tool | What it does | Demo |
+| --- | --- | --- |
+| [`device-frame-kit`](tools/device-frame-kit/) | Wrap any App-Router Next.js prototype in a realistic iPhone + iOS 26 "Liquid Glass" Safari frame — status bar, collapsing Safari bar, a Pages quick-jump drawer, and a QR code to open it on a real phone. On an actual phone it renders full-screen with no frame. | [Live demo ↗](https://calteoh.github.io/prototype-tools/device-frame-kit/) |
 
 ## Using a tool
 

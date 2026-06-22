@@ -13,8 +13,9 @@ import { serializeConfig } from "../lib/serializeConfig";
  *
  * Deliberately invisible on the canvas: there is no on-screen trigger. Open it
  * with ⇧⌘. (⇧Ctrl. on Windows/Linux) or by visiting the page with ?config=1.
- * DeviceFrame only mounts this in development and outside the embed iframe, so
- * it is tree-shaken out of the exported (presentation) build entirely.
+ * It is available in every environment (dev and the deployed build) so changes
+ * can be made live during a demo; DeviceFrame mounts it outside the embed
+ * iframe only. Saving is still manual — Copy/Download the config text.
  */
 export function ConfigPanel({
   settings,
