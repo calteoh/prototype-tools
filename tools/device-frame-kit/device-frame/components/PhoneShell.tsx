@@ -7,19 +7,22 @@ import type { DeviceSpec } from "../lib/types";
 export function PhoneShell({
   device,
   frameColor,
+  frame,
   children,
 }: {
   device: DeviceSpec;
   frameColor: string;
+  /** When false, drop the shell (bezel, corners, shadow) and show the raw viewport. */
+  frame: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div
-      className={styles.shell}
+      className={`${styles.shell}${frame ? "" : ` ${styles.shellBare}`}`}
       style={{
-        padding: device.bezel,
-        borderRadius: device.radius,
-        background: frameColor,
+        padding: frame ? device.bezel : 0,
+        borderRadius: frame ? device.radius : 0,
+        background: frame ? frameColor : "transparent",
       }}
     >
       <div
@@ -27,7 +30,7 @@ export function PhoneShell({
         style={{
           width: device.width,
           height: device.height,
-          borderRadius: Math.max(device.radius - device.bezel, 0),
+          borderRadius: frame ? Math.max(device.radius - device.bezel, 0) : 0,
         }}
       >
         {children}

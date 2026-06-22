@@ -41,7 +41,19 @@ export type DeviceFrameConfig = {
   /** Viewports at least this wide get the phone frame. Default 768. */
   desktopBreakpoint: number;
   /** Device preset or custom dimensions (CSS px, logical viewport). */
-  device: "iphone-14" | { width: number; height: number; bezel?: number; radius?: number };
+  device: "standard" | "large" | { width: number; height: number; bezel?: number; radius?: number };
+  /**
+   * Draw the physical phone shell (curved corners, bezel, drop shadow). When
+   * false the prototype renders at its exact viewport size with no shell, for a
+   * true space-available view. Status bar and Safari bar are unaffected.
+   */
+  frame: boolean;
+  /**
+   * Show the Dynamic Island notch in the status bar. Turn off to hide the notch
+   * while keeping the status bar's time/battery indicators and 59px spacing.
+   * Ignored when `statusBar` is false.
+   */
+  dynamicIsland: boolean;
   /** Bezel color of the phone shell. */
   frameColor: string;
   /** Background of the page behind the phone. */
@@ -57,7 +69,9 @@ export const defaultConfig: DeviceFrameConfig = {
   pages: [{ label: "Home", path: "/" }],
   simulateTouch: false,
   desktopBreakpoint: 768,
-  device: "iphone-14",
+  device: "standard",
+  frame: true,
+  dynamicIsland: true,
   frameColor: "#000",
   backdrop: "#f5f5f4",
 };

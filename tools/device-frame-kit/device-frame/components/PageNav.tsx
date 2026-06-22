@@ -38,8 +38,8 @@ export function PageNav({
         aria-label={open ? "Hide pages" : "Show pages"}
         aria-expanded={open}
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-          <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h12v2H2v-2z" />
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+          <path d="M3 4H21V6H3V4ZM3 11H21V13H3V11ZM3 18H21V20H3V18Z" />
         </svg>
       </button>
 

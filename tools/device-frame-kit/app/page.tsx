@@ -58,7 +58,7 @@ export default function Home() {
 
         {/* stack of empty container boxes */}
         <div className="demo-stack">
-          <div className="card card--accent" style={{ height: 120 }} />
+          <div className="card" style={{ height: 120, background: "var(--g-mid)" }} />
           <div className="demo-row2">
             <div className="card" style={{ height: 188 }} />
             <div className="card" style={{ height: 188 }} />

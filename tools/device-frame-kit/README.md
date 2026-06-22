@@ -64,7 +64,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 export const config: DeviceFrameConfig = {
   ...defaultConfig,
 
+  device: "standard",          // "standard" (390×844) | "large" (430×932) | { width, height }
+  frame: true,                 // false = raw viewport, no shell/corners/shadow
+  backdrop: "#f5f5f4",         // canvas color behind the phone
+
   statusBar: true,             // simulated iOS status bar
+  dynamicIsland: true,         // false = hide notch, keep status-bar indicators
   browserChrome: true,         // simulated Safari bottom bar
   urlBarDomain: "yourproject.com", // the domain shown in the URL pill
 

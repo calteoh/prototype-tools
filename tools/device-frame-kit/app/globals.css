@@ -250,8 +250,15 @@ body {
 
 /* ---------- Carousel ---------- */
 
+/* Carousel stage: no header, so center the carousel in the viewport. */
+.demo-carousel-stage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
 .demo-carousel {
-  margin-top: 8px;
+  width: 100%;
   overflow: hidden;
   touch-action: pan-y;
 }
@@ -267,12 +274,6 @@ body {
   height: 360px;
   border-radius: 22px;
   background: var(--card);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
   user-select: none;
   -webkit-user-select: none;
-}
-.demo-carousel-slide .gh-icon {
-  margin-top: auto;
 }

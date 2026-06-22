@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { config } from "./device-frame.config";
+import { readableIconColor } from "./lib/contrast";
 import { useDesktopFrame } from "./hooks/useDesktopFrame";
 import { useSafariChrome } from "./hooks/useSafariChrome";
 import { installBridge } from "./lib/iframeBridge";
@@ -33,6 +34,10 @@ export function DeviceFrame({ children }: { children: React.ReactNode }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const chrome = useSafariChrome(config.browserChrome);
+
+  // Icon color for the host toggles, chosen for contrast against the backdrop
+  // (flips black/white). Resolves client-side; harmless default during SSR.
+  const iconColor = useMemo(() => readableIconColor(config.backdrop), []);
 
   // Prepend basePath so jump URLs resolve on sub-path deploys (empty in dev).
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -115,8 +120,11 @@ export function DeviceFrame({ children }: { children: React.ReactNode }) {
   const device = resolveDevice(config.device);
 
   return (
-    <div className={styles.host} style={{ background: config.backdrop }}>
-      <PhoneShell device={device} frameColor={config.frameColor}>
+    <div
+      className={styles.host}
+      style={{ background: config.backdrop, ["--df-icon-color" as string]: iconColor } as React.CSSProperties}
+    >
+      <PhoneShell device={device} frameColor={config.frameColor} frame={config.frame}>
         {/* iOS 26 model: the iframe is full height and the page scrolls behind
             the floating glass Safari bar, so the bar's blur refracts it. */}
         {embedUrl && (
@@ -131,7 +139,7 @@ export function DeviceFrame({ children }: { children: React.ReactNode }) {
             }}
           />
         )}
-        {config.statusBar && <StatusBar />}
+        {config.statusBar && <StatusBar dynamicIsland={config.dynamicIsland} />}
         {config.browserChrome && (
           <SafariBar
             state={chrome.state}

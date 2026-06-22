@@ -29,6 +29,11 @@
     0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
+/* Frameless mode: raw viewport, no device shadow (bezel/corners are inline). */
+.shellBare {
+  box-shadow: none;
+}
+
 .screen {
   position: relative;
   overflow: hidden;
@@ -179,20 +184,21 @@
 
 /* ---------- Host tools: Pages drawer + QR toggle ---------- */
 
-/* Square icon button — shared by the Pages and QR toggles so they're identical. */
+/* Square icon button — shared by the Pages and QR toggles so they're identical.
+   Sits flat on the canvas (no card/shadow); the icon color tracks the backdrop
+   for contrast, and hovering reveals a faint rounded-rect of the button shape. */
 .iconButton {
   padding: 12px;
   border: 0;
   border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  color: #737373;
+  background: transparent;
+  color: var(--df-icon-color, #1b1b1b);
   cursor: pointer;
-  transition: opacity 0.3s ease-out;
+  transition: background-color 0.2s ease-out;
 }
 
 .iconButton:hover {
-  opacity: 0.9;
+  background: color-mix(in srgb, var(--df-icon-color, #1b1b1b) 12%, transparent);
 }
 
 .iconButton svg {
@@ -268,6 +274,17 @@
   right: 32px;
   top: 32px;
   z-index: 50; /* above the phone shell + its chrome */
+}
+
+/* When the QR is expanded, restore the white card + shadow so the launched
+   popover is unchanged from before (the collapsed button stays flat). */
+.qrOpen {
+  background: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.qrOpen:hover {
+  background: #fff;
 }
 
 /* ---------- Fake touch cursor (simulateTouch) ---------- */

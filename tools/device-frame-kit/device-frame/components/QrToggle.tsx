@@ -20,7 +20,7 @@ export function QrToggle({ shareUrl }: { shareUrl: string }) {
   return (
     <button
       type="button"
-      className={styles.qrToggle}
+      className={`${styles.qrToggle}${qr ? ` ${styles.qrOpen}` : ""}`}
       onClick={() => setVisible((v) => !v)}
       aria-label={visible ? "Hide QR code" : "Show QR code"}
     >
@@ -37,8 +37,8 @@ export function QrToggle({ shareUrl }: { shareUrl: string }) {
           <path d={qr.d} fill="#000" />
         </svg>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden style={{ display: "block" }}>
-          <path d="M1 1h6v6H1V1zm1 1v4h4V2H2zm7-1h6v6H9V1zm1 1v4h4V2h-4zM1 9h6v6H1V9zm1 1v4h4v-4H2zm7 0h2v2H9v-2zm4 0h2v2h-2v-2zm-4 4h2v2H9v-2zm2-2h2v2h-2v-2zm2 2h2v2h-2v-2z" />
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden style={{ display: "block" }}>
+          <path d="M16 17V16H13V13H16V15H18V17H17V19H15V21H13V18H15V17H16ZM21 21H17V19H19V17H21V21ZM3 3H11V11H3V3ZM5 5V9H9V5H5ZM13 3H21V11H13V3ZM15 5V9H19V5H15ZM3 13H11V21H3V13ZM5 15V19H9V15H5ZM18 13H21V15H18V13ZM6 6H8V8H6V6ZM6 16H8V18H6V16ZM16 6H18V8H16V6Z" />
         </svg>
       )}
     </button>

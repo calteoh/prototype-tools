@@ -2,12 +2,16 @@ import type { DeviceFrameConfig, DeviceSpec } from "./types";
 
 export const DEVICE_PRESETS: Record<string, DeviceSpec> = {
   // iPhone 14/15 class logical viewport. Bezel/radius are presentation-only.
+  standard: { width: 390, height: 844, bezel: 10, radius: 44 },
+  // iPhone Pro Max / Plus class logical viewport.
+  large: { width: 430, height: 932, bezel: 12, radius: 55 },
+  // Back-compat alias for configs that still name the old preset.
   "iphone-14": { width: 390, height: 844, bezel: 10, radius: 44 },
 };
 
 export function resolveDevice(device: DeviceFrameConfig["device"]): DeviceSpec {
   if (typeof device === "string") {
-    return DEVICE_PRESETS[device] ?? DEVICE_PRESETS["iphone-14"];
+    return DEVICE_PRESETS[device] ?? DEVICE_PRESETS["standard"];
   }
   return {
     width: device.width,

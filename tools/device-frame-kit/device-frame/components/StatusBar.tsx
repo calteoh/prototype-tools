@@ -11,11 +11,11 @@ import styles from "../styles/device-frame.module.css";
  * "9:41" is Apple's canonical marketing time. Dark glyphs by default — suits
  * light designs; theming can come later if a direction needs it.
  */
-export function StatusBar() {
+export function StatusBar({ dynamicIsland }: { dynamicIsland: boolean }) {
   return (
     <div className={styles.statusBar} aria-hidden>
       <div className={styles.statusTime}>9:41</div>
-      <div className={styles.statusIsland} />
+      {dynamicIsland && <div className={styles.statusIsland} />}
       <div className={styles.statusIcons}>
         {/* Cellular signal */}
         <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">

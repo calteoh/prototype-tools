@@ -39,11 +39,8 @@ export default function CarouselDemo() {
   return (
     <>
       <div className="demo-statusfill" />
-      <header className="demo-head">
-        <div className="gh gh-strong" style={{ height: 15, width: 110 }} />
-      </header>
 
-      <main>
+      <main className="demo-carousel-stage">
         <div
           className="demo-carousel"
           onTouchStart={onTouchStart}
@@ -59,14 +56,7 @@ export default function CarouselDemo() {
               <div
                 key={i}
                 className={`demo-carousel-slide${accent ? " card--accent" : ""}`}
-              >
-                <div className="card-top">
-                  <div className="gh" style={{ height: 13, width: 96 }} />
-                  <div className="gh-pill" style={{ height: 18, width: 56 }} />
-                </div>
-                <div className="gh-icon" style={{ width: 34, height: 34 }} />
-                <div className="gh gh-strong" style={{ height: 34, width: 130, marginTop: 16 }} />
-              </div>
+              />
             ))}
           </div>
         </div>
