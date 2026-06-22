@@ -12,7 +12,13 @@ What you get around your prototype:
 - **A "Pages" menu** (hamburger button) to jump straight to any page or state of your prototype
 - **A QR code button** so reviewers can open the prototype on their own phone
 
-Everything is switched on/off in **one config file**. There is no settings UI on screen — what reviewers see is just your prototype in a phone.
+You can configure all of this two ways: by clicking through an **on-screen settings panel** (no code needed), or by editing **one config file**. Either way it's invisible to your audience — what reviewers see is just your prototype in a phone.
+
+> **New to this? Here's how it goes.** You don't need to write code yourself. The quickest way to add the kit is to let your AI assistant do the setup — in your AI coding tool (Claude Code, Cursor, etc.), say:
+>
+> > *"Follow INTEGRATION.md in the device-frame kit to add the device frame to my project."*
+>
+> It works through the setup steps below for you. Once it's running, changing how the phone looks — size, colours, status bar, and so on — is point-and-click in the **[settings panel](#settings-panel-no-code-needed)**, no code at all. The steps below are written in plain language so you can follow along and do the easy ones yourself; hand any step you'd rather skip to your assistant.
 
 ---
 
@@ -40,9 +46,11 @@ Open [http://localhost:3050](http://localhost:3050) in a desktop browser. Scroll
 
 ## Add it to your project — 3 steps
 
+This is the one-time setup. The fastest route is to hand it to your AI assistant (see the note above) — but it's only three steps, and the first is a plain copy-paste you can do yourself.
+
 **1. Copy the `device-frame/` folder** into the root of your Next.js project (next to your `app/` folder). The folder is self-contained — components, styles, config, everything.
 
-**2. Wrap your layout.** In `app/layout.tsx`, import the component and wrap your page content:
+**2. Wrap your layout.** This is the one step that edits code — it tells your project to render every page inside the phone. If you'd rather not touch it, paste this to your assistant: *"In app/layout.tsx, import DeviceFrame from ../device-frame/DeviceFrame and wrap the children in it."* Otherwise, in `app/layout.tsx` import the component and wrap your page content:
 
 ```tsx
 import { DeviceFrame } from "../device-frame/DeviceFrame";
@@ -58,7 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-**3. Edit `device-frame/device-frame.config.ts`.** That's the whole control panel:
+**3. Set your options.** Day to day you'll do this in the **[settings panel](#settings-panel-no-code-needed)** (no code) — but the options live in `device-frame/device-frame.config.ts`, and this is what each one controls:
 
 ```ts
 export const config: DeviceFrameConfig = {
@@ -88,6 +96,41 @@ Run your project, open it on a desktop browser — your prototype is in the phon
 
 ---
 
+## Settings panel (no code needed)
+
+You don't have to edit any files to change how the phone looks. While the project is running on your computer (the preview you see at a `localhost` address in your browser), you can open a settings panel and change everything by clicking.
+
+### Opening the panel
+
+There's **no button on screen** for it on purpose — that keeps the phone clean when you're presenting. Open it one of two ways:
+
+- **Keyboard shortcut:** hold **Shift + Command + . (period)** on a Mac, or **Shift + Ctrl + .** on Windows. Press the same keys again to close it. (Or press **Esc** to close.)
+- **Web address:** click in your browser's address bar, add **`?config=1`** to the end of the address, and press Enter. For example: `localhost:3050/?config=1`.
+
+The panel opens in the **bottom-right corner**.
+
+### Changing the look
+
+Use the controls to change the phone size, turn the frame / status bar / notch / Safari bar on or off, pick the background and frame colours, and toggle the presenter tools. **Everything updates instantly** so you can see exactly what you'll get.
+
+These changes are temporary previews — they only live in your browser until you save them (next step).
+
+### Saving your changes for the whole team
+
+When the phone looks the way you want:
+
+1. Click **Copy config** at the bottom of the panel (this copies the new settings).
+2. Open the file **`device-frame/device-frame.config.ts`**, select all of its contents, and paste to replace them. Save the file.
+3. Share it with the team the usual way (commit to Git). Everyone who pulls the project now gets your settings as the new default.
+
+> Prefer not to touch the file yourself? Click **Copy config** and ask your developer (or Claude) to paste it in for you. **Download** saves the settings as a file instead, and **Reset to file** discards your changes and goes back to the last saved settings. The list of pages in the Pages drawer is kept exactly as-is when you save — edit that list in the file.
+
+### Good to know
+
+The settings panel only exists in the local preview. It is **completely removed** from the shared/published version of the prototype, so it can never accidentally show up in front of a client.
+
+---
+
 ## Registering pages and states
 
 The Pages drawer exists so reviewers can jump straight to a screen **without clicking through the flow**. Each entry is just a URL — every click does a fresh page load inside the phone, so the drawer never needs to know anything about your routing.
@@ -112,7 +155,7 @@ The bar is modeled on **iOS 26's "Liquid Glass" Safari**: floating glass pills (
 
 Because the bar floats *over* the content (rather than the viewport ending above it), your design gets the full screen height; the bar overlays the bottom, exactly like real iOS 26.
 
-Two hooks your CSS can use:
+The rest of this section is reference for making fixed headers/footers behave — read it if you're hands-on, or hand it to your assistant when you need it. Two hooks your CSS can use:
 
 **1. Safe areas.** The status bar overlays the top 59px and the floating bar occupies the bottom. Pad your fixed chrome with the kit's variables:
 
@@ -150,7 +193,7 @@ Leave it off if your prototype changes behavior based on pointer type — with i
   NEXT_PUBLIC_BASE_PATH=/my-prototype pnpm build
   ```
 
-  The kit's navigation and QR codes handle the sub-path automatically. **But note:** Next.js does *not* rewrite plain image/video `src` strings. If your prototype references files in `public/` (like `<img src="/photos/bag.jpg">`), prefix them with a tiny helper or they will 404 on the deployed build:
+  The kit's navigation and QR codes handle the sub-path automatically. **But note:** Next.js does *not* rewrite plain image/video `src` strings. If your prototype references files in `public/` (like `<img src="/photos/bag.jpg">`), they'll work locally but 404 once deployed under a sub-path. This one's fiddly — a good one to hand off: *"Add an asset() helper for the base path and use it on my image/video src attributes."* For reference, the helper is just:
 
   ```ts
   // lib/asset.ts
@@ -167,6 +210,8 @@ Leave it off if your prototype changes behavior based on pointer type — with i
 
 ## Troubleshooting
 
+Hit a snag? Common ones are below — and you can paste any row straight to your AI assistant to have it sorted.
+
 | Symptom | Cause / fix |
 | --- | --- |
 | **Images work locally but 404 when deployed** | You're deployed under a sub-path and raw `src` strings aren't prefixed. Use the `asset()` helper above. |
@@ -180,9 +225,9 @@ Leave it off if your prototype changes behavior based on pointer type — with i
 
 ---
 
-## For AI assistants
+## The detailed runbook (hand this to your AI)
 
-If you build with Claude, Cursor, or similar: point the assistant at [INTEGRATION.md](INTEGRATION.md) and say *"Follow INTEGRATION.md to add the device frame to my project."* It contains a deterministic, step-by-step runbook (file copy, layout diff, config generation from your routes, verification).
+The setup above can be done entirely by your AI assistant — this is the file that makes it reliable. Point it at [INTEGRATION.md](INTEGRATION.md) and say *"Follow INTEGRATION.md to add the device frame to my project."* That file is a deterministic, step-by-step runbook — file copy, layout edit, config generated from your actual routes, and a verification pass — so the assistant doesn't have to guess.
 
 ---
 

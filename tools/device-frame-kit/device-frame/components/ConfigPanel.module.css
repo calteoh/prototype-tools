@@ -1,0 +1,192 @@
+/* Dev-only config panel styling. Lives in its own module (imported only by
+ * ConfigPanel) so it rides the gated dynamic chunk and is dropped from the
+ * exported production build along with the panel itself. */
+
+.cfgPanel {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2000; /* above the host layer (1000) and its tools (50) */
+  width: 300px;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  color: #1b1b1b;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.cfgHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+}
+.cfgTitle {
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.cfgClose {
+  border: 0;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 4px;
+}
+.cfgClose:hover {
+  color: #1b1b1b;
+}
+
+.cfgBody {
+  padding: 6px 14px 12px;
+  overflow-y: auto;
+}
+
+.cfgGroup {
+  margin: 12px 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #a3a3a3;
+}
+
+.cfgRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 30px;
+}
+.cfgLabel {
+  color: #404040;
+}
+
+.cfgSegmented {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: #f1f1f1;
+}
+.cfgSeg,
+.cfgSegActive {
+  border: 0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  background: transparent;
+  color: #555;
+}
+.cfgSegActive {
+  background: #fff;
+  color: #1b1b1b;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cfgPair {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cfgTimes {
+  color: #a3a3a3;
+}
+
+.cfgText,
+.cfgNumber {
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+  color: #1b1b1b;
+  background: #fff;
+}
+.cfgText {
+  width: 130px;
+}
+.cfgNumber {
+  width: 64px;
+  text-align: right;
+}
+
+.cfgCheck {
+  width: 16px;
+  height: 16px;
+  accent-color: #171717;
+  cursor: pointer;
+}
+
+.cfgColor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cfgColor input[type="color"] {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+.cfgColor .cfgText {
+  width: 92px;
+}
+
+.cfgNote {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #a3a3a3;
+}
+
+.cfgActions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid #eee;
+}
+.cfgPrimary,
+.cfgSecondary {
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.cfgPrimary {
+  flex: 1;
+  background: #171717;
+  color: #fff;
+}
+.cfgPrimary:hover {
+  background: #000;
+}
+.cfgSecondary {
+  background: #f1f1f1;
+  color: #404040;
+}
+.cfgSecondary:hover {
+  background: #e7e7e7;
+}
+
+.cfgHint {
+  margin: 0;
+  padding: 0 14px 12px;
+  font-size: 11px;
+  color: #a3a3a3;
+}
