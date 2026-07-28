@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "schema": "prototype-tokens-v1",
+    "generated": "example file — /project-setup writes the real one from brand materials",
+    "figma": {
+      "fileKey": "REPLACED_AT_SETUP",
+      "collections": { "primitives": "Primitives", "semantic": "Semantic" }
+    }
+  },
+  "primitives": {
+    "color": {
+      "red-600": "#E8112D",
+      "ink-900": "#121212",
+      "ink-600": "#6B6760",
+      "paper-50": "#F5F2ED",
+      "white": "#FFFFFF"
+    },
+    "spacing": { "base": 8 }
+  },
+  "colors": {
+    "fg": {
+      "primary": "{primitives.color.ink-900}",
+      "secondary": "{primitives.color.ink-600}",
+      "on-inverse": "{primitives.color.paper-50}"
+    },
+    "surface": {
+      "primary": "{primitives.color.white}",
+      "secondary": "{primitives.color.paper-50}",
+      "inverse": "{primitives.color.ink-900}"
+    },
+    "brand": {
+      "primary": "{primitives.color.red-600}"
+    },
+    "line": {
+      "subtle": "#E5E1DA"
+    }
+  },
+  "fontFamily": {
+    "display": ["PlaceholderSerif-Bold"],
+    "body": ["PlaceholderSans-Regular"],
+    "body-bold": ["PlaceholderSans-Bold"]
+  },
+  "fontSize": {
+    "display": ["48px", { "lineHeight": "52.8px", "letterSpacing": "-0.96px" }],
+    "heading-1": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.32px" }],
+    "heading-2": ["24px", { "lineHeight": "28px" }],
+    "body": ["16px", { "lineHeight": "24px" }],
+    "body-emphasized": ["16px", { "lineHeight": "24px" }],
+    "body-inline-link": ["16px", { "lineHeight": "24px" }],
+    "caption": ["12px", { "lineHeight": "16px" }],
+    "caption-inline-link": ["12px", { "lineHeight": "16px" }],
+    "cta-label": ["14px", { "lineHeight": "16px", "letterSpacing": "0.84px" }]
+  }
+}

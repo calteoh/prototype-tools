@@ -1,0 +1,127 @@
+<!-- setup-skill: agent-instantiated. Keep only the stack sections that apply (Expo /
+     web). Replace {{...}}; where an intake answer was "not decided", keep the line and
+     mark it TBD rather than inventing a value. Delete these comments. -->
+# CLAUDE.md — {{PROJECT_NAME}} Prototypes
+
+> New here? Read [`GETTING-STARTED.md`](GETTING-STARTED.md) first. This file is the
+> working reference for **how we build** once you're set up.
+
+## Project Context
+
+- This is a **concepting-phase prototype** for **{{PROJECT_NAME}}** — {{PROJECT_DESCRIPTION}}.
+- Current phase: **{{CURRENT_PHASE}}**. The immediate goal is {{CURRENT_DELIVERABLE}}.
+- Audience: internal + **client concept reviews / walkthroughs**. These are not end
+  users and this is not a production build.
+- Fidelity bar: **interactive prototypes that feel real.** High visual fidelity,
+  **not production code.** Optimize for fidelity and fast iteration over robustness.
+- Detail design, a real design system, a11y certification, and production builds are
+  **later phases, owned by others. Do not preempt them.** Build the concept, not the
+  system.
+
+## Repo routing — where context lives
+
+Keep concerns separated; pull context from the owning file instead of restating it:
+
+| Topic | File |
+|---|---|
+| Design-system decisions, tokens, open design questions | [`DESIGN.md`](DESIGN.md) |
+| Copy voice, terminology, mock-content rules | [`TONE-OF-VOICE.md`](TONE-OF-VOICE.md) |
+| Environment setup, run instructions, newcomer pitfalls | [`GETTING-STARTED.md`](GETTING-STARTED.md) |
+| What exists, current status | [`README.md`](README.md) |
+
+## Stack
+
+<!-- setup-skill: EXPO SECTION — keep only for React Native projects -->
+- **Framework:** **Expo** (managed workflow) + **React Native**.
+- **Expo SDK: {{EXPO_SDK}}** — deliberately pinned to match the **Expo Go build
+  currently on the App Store**. **⚠️ Do not `expo upgrade` to a newer SDK** — the app
+  on reviewers' phones (Expo Go) only runs SDK {{EXPO_SDK}}; a newer SDK breaks
+  on-device preview. If you scaffold a new app, re-pin to the live Expo Go SDK.
+- **Styling: NativeWind v4** (`className`) with **Tailwind v3** (`tailwindcss@^3.4`) —
+  NativeWind v4 is not compatible with Tailwind v4. Config lives in five files:
+  `babel.config.js`, `metro.config.js`, `global.css`, `tailwind.config.js`,
+  `nativewind-env.d.ts`. **If you add a source folder, add it to `content` in
+  `tailwind.config.js`** or its classes silently won't apply.
+- **Animation:** **Moti** by default; **Reanimated** for gesture/scroll choreography.
+  Both run in Expo Go. Don't hand-roll animations with `setState`.
+- **Fonts:** **`expo-font` `useFonts` hook** at runtime. **Do NOT use the `expo-font`
+  config plugin** — it needs a development build and won't run in Expo Go. Load each
+  weight as its own family; don't rely on `fontWeight` to swap custom faces.
+- **Navigation:** none until a 2nd screen appears, then **React Navigation**
+  (`@react-navigation/native` + `native-stack`).
+
+<!-- setup-skill: WEB SECTION — keep only for responsive-web projects -->
+- **Framework:** **Next.js** (App Router) + **Tailwind v4**, **static export**
+  (`output: "export"` — plain HTML/CSS/JS, no server, hostable anywhere).
+- **Prototype-grade config is a feature:** `typescript: { ignoreBuildErrors: true }` —
+  type errors never block a client demo.
+- **⚠️ The `basePath` asset trap:** Next does not rewrite raw `<img src>`,
+  `<video src>`, or `background-image: url()` strings. Every `/`-prefixed public
+  asset path must go through the local `asset()` helper (`lib/asset.ts`). Symptom:
+  images work in `dev` and 404 on the deployed sub-path.
+- **Animation:** **Motion (Framer Motion)** by default.
+
+<!-- setup-skill: SHARED — always keep -->
+- **Design tokens:** canonical **`tokens.json`** per app, mirrored in the
+  [Figma design library]({{FIGMA_LIBRARY_URL}}). Update with `/sync-tokens`; never
+  hand-edit emitted files. See [`DESIGN.md`](DESIGN.md).
+- **Language:** TypeScript, **loose** (`"strict": false`). `any` is fine to move fast.
+- **State:** React local state. No Redux/Zustand/data-fetching libraries.
+
+## Conventions
+
+- Work is organized by **phase**; each concept is its **own self-contained app**
+  inside its phase folder — "cd in and run." **Do not cross-import between concepts —
+  copy, don't share.**
+- Within an app: `src/screens` (one file per screen), `src/components`
+  (reused-within-this-app UI), `src/theme` (tokens + non-utility constants),
+  `src/data` (mock content), `assets/` (fonts + images this app uses).
+- Keep it flat. **No abstraction until a pattern repeats ~3×.**
+- **Copy** shared assets from `/shared` into the app's own folder. Never import
+  across app roots.
+
+## Content & copy
+
+- **Plausible, on-voice copy — never lorem ipsum.** Follow
+  [`TONE-OF-VOICE.md`](TONE-OF-VOICE.md).
+- **Real-ish, clearly illustrative mock data.** No real private data; don't imply
+  real endorsements.
+- **Imagery is Figma / client-provided only.** Use neutral placeholders where imagery
+  is missing; don't source new imagery off the web.
+
+## Accessibility
+
+WCAG as a **guiding principle**: color contrast, ≥44pt touch targets, labels on
+icon-only controls. Formal certification is a later phase — don't block iteration.
+
+## Handling missing design decisions
+
+- If a decision is **load-bearing** for a review (core layout, nav model,
+  brand-critical) → **ask first.**
+- Otherwise make the **smallest plausible choice**, add a `// TODO(design):` at the
+  exact site, record it in [`DESIGN.md`](DESIGN.md) → "To decide", and prefer a
+  visible placeholder over a silently invented final value.
+- **Never invent brand voice or claims** — pull from the Figma, or ask.
+- **Flag any assumption that will be visible in a walkthrough before the
+  walkthrough.** Surprises in review are the highest-cost failure mode.
+
+## Do Not
+
+- Do not build production code. No backend/API/auth/analytics/push. No tests/CI. No
+  App Store / hosting config beyond the static build.
+- Do not add state-management or data-fetching libraries. Mock inline or in `src/data`.
+- Do not create component factories / premature abstractions.
+- Do not cross-import between concepts or from `/shared` — copy assets in.
+<!-- setup-skill: keep the stack-specific do-nots that apply -->
+- Do not `expo upgrade` past the on-device Expo Go SDK ({{EXPO_SDK}}).
+- Do not use the `expo-font` config plugin or dynamic `require()` paths.
+- Do not use Tailwind v4 in the Expo app (NativeWind v4 needs v3).
+- Do not bypass the `asset()` helper for public asset paths in the web app.
+- Do not hand-edit emitted token files (`tokens.css`, tailwind theme) — edit
+  `tokens.json` or the Figma library, then `/sync-tokens`.
+
+## Verification
+
+- **Primary (fidelity is judged here):** {{PRIMARY_VERIFICATION}}
+- **No automated tests for prototypes.** "Verified" = it runs, matches the Figma, the
+  flow is walkable, and the console shows no errors.

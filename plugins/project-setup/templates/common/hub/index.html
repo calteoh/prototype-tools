@@ -1,0 +1,96 @@
+<!doctype html>
+<!-- setup-skill: agent-instantiated template. Replace {{PROJECT_NAME}} / {{CLIENT_MARK}},
+     keep {{BUILD_TIMESTAMP}} verbatim (the build script substitutes it), add one <section>
+     per phase with one <li> per concept, then delete these comments.
+     TODO(design): placeholder layout — Calvin supplies the hub visual design later;
+     keep the markup structure (header / sections / list rows / footer) restyleable. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{PROJECT_NAME}} — Concept Prototypes</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      :root {
+        --bg: #f4f1ec;
+        --ink: #111;
+        --muted: #6b6760;
+        --rule: #1c1c1c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        min-height: 100dvh;
+      }
+      .wrap { max-width: 640px; margin: 0 auto; padding: 48px 24px 64px; }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--rule);
+        margin-bottom: 48px;
+      }
+      .mark { font-weight: 500; letter-spacing: 0.02em; font-size: 14px; }
+      .meta, h2, .kind, footer {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+      section { margin-bottom: 40px; }
+      h2 { margin: 0 0 12px; font-weight: 500; }
+      ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+      li { border-bottom: 1px solid var(--rule); }
+      a, .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 16px;
+        padding: 14px 0;
+        text-decoration: none;
+        color: inherit;
+        font-size: 15px;
+      }
+      a:hover { color: var(--muted); }
+      .row.is-disabled { color: var(--muted); }
+      .kind { flex-shrink: 0; }
+      footer {
+        margin-top: 64px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule);
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="mark">{{CLIENT_MARK}}</div>
+        <div class="meta">Concept prototypes</div>
+      </header>
+
+      <section>
+        <h2>{{PHASE_TITLE}}</h2>
+        <ul>
+          <li>
+            <a href="/{{CONCEPT_SUBPATH}}/">
+              <span>{{CONCEPT_NAME}}</span>
+              <span class="kind">{{CONCEPT_KIND}}</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <footer>
+        <div>Internal review &mdash; not for distribution</div>
+        <div>Last updated {{BUILD_TIMESTAMP}}</div>
+      </footer>
+    </div>
+  </body>
+</html>

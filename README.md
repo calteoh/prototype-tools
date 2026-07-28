@@ -23,6 +23,23 @@ pnpm install
 pnpm dev
 ```
 
+## Claude Code plugins
+
+Unlike `tools/` (copied into a project), plugins install into [Claude Code](https://claude.com/claude-code)
+and add slash-commands to it. This repo doubles as a plugin **marketplace** named
+`prototype-tools`:
+
+```
+/plugin marketplace add calteoh/prototype-tools
+/plugin install project-setup@prototype-tools
+```
+
+| Plugin | What it adds | Status |
+| --- | --- | --- |
+| [`project-setup`](plugins/project-setup/) | `/project-setup` scaffolds a whole prototyping project (repo, docs, Expo/Next.js app, Figma design library from brand materials); `/sync-tokens` keeps design tokens matched between Figma and code; plus `/figma-library-push` and `/import-copy`. | Experimental |
+
+Update installed plugins with `/plugin marketplace update prototype-tools`.
+
 ## License
 
 [MIT](LICENSE) © Calvin Teoh

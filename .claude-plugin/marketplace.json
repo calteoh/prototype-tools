@@ -1,0 +1,16 @@
+{
+  "name": "prototype-tools",
+  "owner": {
+    "name": "Calvin Teoh"
+  },
+  "metadata": {
+    "description": "Experimental Claude Code plugins for AI-assisted prototyping projects — personal toolkit, shared for testing."
+  },
+  "plugins": [
+    {
+      "name": "project-setup",
+      "source": "./plugins/project-setup",
+      "description": "Scaffold a new prototyping project across a GitHub repo and a Figma design library: repo structure, designer-friendly docs, app boilerplate (Expo / Next.js), brand-derived design tokens, and ongoing Figma↔code token sync."
+    }
+  ]
+}
