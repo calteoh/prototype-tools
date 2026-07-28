@@ -69,13 +69,20 @@ Follow the stack procedure(s) **exactly** — they encode hard-won failures:
 ## Step 4 — Brand ingestion → tokens.json (draft, then review)
 
 1. Read every supplied brand material (PDFs/images with Read, Figma URLs with the
-   Figma read tools, web URLs with WebFetch).
+   Figma read tools, web URLs with WebFetch). Two field-tested fallbacks: JS-heavy
+   brand sites often embed their full content as JSON in the HTML (standards.site
+   pages carry a `var documentData = {…}` payload — curl the page and parse that
+   when WebFetch returns only a title), and on managed Macs Python's `urllib` may
+   lack SSL certs — download with `curl`, parse the local file.
 2. Propose a draft: primitives (color palette with kebab names), semantic mappings
    (`fg/…`, `surface/…`, `brand/…`, `line/…`), `fontFamily`, and the typescale —
    shaped per `templates/common/tokens/TOKENS-FORMAT.md`.
 3. **Present the draft as a table with sources** ("red-600 #E8112D — from brand PDF
    p.4") and get explicit operator approval; iterate until approved. This is a draft
-   a human reviews, never a silent decision.
+   a human reviews, never a silent decision. **Put the draft inside the approval
+   prompt itself** (e.g. the AskUserQuestion option preview) — chat text above the
+   prompt gets missed, and the operator ends up asked to approve something they
+   never saw.
 4. Write `tokens.json` into each app (`src/theme/` for Expo, `styles/` for web) and
    emit the surfaces: the Expo tailwind config already consumes it; for web, emit
    `styles/tokens.css`.

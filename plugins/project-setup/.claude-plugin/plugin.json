@@ -1,6 +1,6 @@
 {
   "name": "project-setup",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Project setup: scaffolds a prototyping repo (Expo and/or Next.js) with designer-friendly docs, launches a Figma design library from brand materials, and keeps design tokens in sync between Figma and code via /sync-tokens.",
   "author": {
     "name": "Calvin Teoh"

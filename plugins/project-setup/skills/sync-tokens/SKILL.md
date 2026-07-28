@@ -90,3 +90,6 @@ library changes need re-publishing in the Figma UI).
 - Never hand-edit or merge-resolve `tokens.lock.json`; a corrupted lock →
   re-baseline by running /figma-library-push (it rewrites the lock from live state
   after reconciling with the user).
+- If a synced token matches a DESIGN.md "To decide" entry (e.g. a TBD dark value a
+  designer just settled in Figma), say so in the report — the sync resolved the
+  decision, and DESIGN.md should be updated to match.

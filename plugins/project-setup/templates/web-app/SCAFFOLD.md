@@ -7,8 +7,22 @@ static export, 11 sibling apps stitched under one hub). Do the steps in order.
 ## 1. Scaffold
 
 ```bash
-npx create-next-app@latest <app-name> --typescript --tailwind --app --no-src-dir --use-npm
+npx create-next-app@latest <app-name> --typescript --tailwind --eslint --app --no-src-dir --use-npm --import-alias "@/*" --turbopack
 ```
+
+(Pass every flag — any omitted one becomes an interactive prompt that stalls the run.)
+
+Then three cleanups, verified necessary on current create-next-app output:
+
+- **Delete the generated `README.md`, `CLAUDE.md`, and `AGENTS.md` inside the app** —
+  create-next-app now emits its own agent docs, and they fight the repo-level
+  CLAUDE.md's conventions.
+- **Rewrite `app/layout.tsx`** — the default imports Geist via `next/font/google`
+  (network-dependent, off-token); replace with a plain layout that sets
+  `data-theme="light"` on `<html>` and imports `globals.css` only.
+- **Rewrite `app/globals.css`** — drop the default `--background`/`--foreground`
+  theme variables and the `@theme inline` block; import `../styles/tokens.css` and
+  set `body` from semantic tokens.
 
 Then replace `next.config.ts` with the copy in this folder — it encodes the three
 load-bearing conventions:

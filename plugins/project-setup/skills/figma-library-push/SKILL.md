@@ -63,6 +63,12 @@ exists, create only what's missing, never duplicate.
 
 ## Known failure modes (learned the hard way — don't relearn)
 
+- **The remote MCP's font list is NOT the user's font list.** `listAvailableFontsAsync`
+  in the connector environment doesn't see fonts installed on the operator's machine
+  or uploaded to their org — brand faces will read as missing even when designers use
+  them daily in the same file. Expect the Inter-placeholder path to be the norm, not
+  the exception; the swap always goes on the human checklist.
+
 - **Mode ids belong to their own collection.** `setValueForMode` with another
   collection's mode id throws `mode with id … not defined for variable`. Always
   resolve the mode id from the variable's own `variableCollectionId`.
