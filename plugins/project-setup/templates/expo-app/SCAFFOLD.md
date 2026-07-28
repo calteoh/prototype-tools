@@ -6,15 +6,27 @@ Every config below is field-tested on a professional-sports client's native-mobi
 ## 1. Pin to the live Expo Go SDK — before anything else
 
 `create-expo-app` defaults to the newest SDK, which the Expo Go app on reviewers'
-phones usually **cannot run yet**. Find the SDK the live Expo Go supports and pin to
-it:
+phones usually **cannot run yet** (Expo ships SDKs on npm before the matching Expo Go
+clears App Store review). Procedure adapted from Julian Stahl's `mobile-prototype`
+skill (`github.com/juliansthl/agent-skills`):
 
-1. Look up **Expo Go on the App Store** (`https://apps.apple.com/app/expo-go/id982107779`)
-   and read its current version — the major version is the supported SDK (e.g. Expo Go
-   `54.0.2` → SDK 54).
-2. Scaffold with that template version:
+1. Look up the shipping Expo Go version via the iTunes Search API — its **major
+   version equals the SDK it targets** (e.g. `54.0.2` → SDK 54):
    ```bash
-   npx create-expo-app@latest <app-name> --template blank-typescript@sdk-<N>
+   curl -s "https://itunes.apple.com/lookup?id=982107779&country=us" \
+     | python3 -c "import json,sys; print(json.load(sys.stdin)['results'][0]['version'])"
+   ```
+   If the major doesn't look like a plausible SDK number, check
+   https://docs.expo.dev/versions/latest/ and confirm with the operator.
+2. Scaffold, then pin. Don't guess per-SDK template tags — scaffold latest and
+   reconcile:
+   ```bash
+   npx create-expo-app@latest <app-name> --template blank-typescript --no-install
+   cd <app-name>
+   # if package.json's expo major ≠ the SDK from step 1:
+   npm install expo@~<SDK_VERSION>.0.0
+   npx expo install --fix     # reconciles react-native, react, and all expo-* peers
+   npm install
    ```
 3. Record the pinned SDK in the project's CLAUDE.md and GETTING-STARTED.md
    (`{{EXPO_SDK}}` placeholders).
@@ -162,7 +174,17 @@ run in Expo Go).
   needed and won't match exactly.
 - Rounded corners clip children only with `overflow: 'hidden'`; truncate with
   `numberOfLines`.
-- Long lists → `FlatList`; a few items → `ScrollView`.
+- Long lists → **FlashList** (`@shopify/flash-list`; swapping in early beats a
+  painful later migration) or `FlatList`; a few items → `ScrollView`.
+- Prefer `expo-image` over RN's `Image` (caching, transitions, remote handling);
+  in lists, always set explicit `width`/`height` so layout doesn't jump as images
+  load.
+- Animate only `transform` and `opacity` with Reanimated — they run on the UI
+  thread without re-rendering. For taps that must feel native, `Gesture.Tap` from
+  `react-native-gesture-handler` beats `Pressable`.
+
+Deeper references when needed: Expo's official building-native-ui skill
+(`github.com/expo/skills`) and `vercel-labs/agent-skills` react-native skills.
 
 ## 8. Verify
 

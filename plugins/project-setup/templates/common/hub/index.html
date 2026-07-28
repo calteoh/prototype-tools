@@ -1,95 +1,142 @@
 <!doctype html>
-<!-- setup-skill: agent-instantiated template. Replace {{PROJECT_NAME}} / {{CLIENT_MARK}},
-     keep {{BUILD_TIMESTAMP}} verbatim (the build script substitutes it), add one <section>
-     per phase with one <li> per concept, then delete these comments.
-     TODO(design): placeholder layout — Calvin supplies the hub visual design later;
-     keep the markup structure (header / sections / list rows / footer) restyleable. -->
+<!-- setup-skill: agent-instantiated template. Replace every {{...}}, add one <section>
+     per phase with one <li> per concept, drop in the client logo (keep the 24px-high
+     slot), keep {{BUILD_TIMESTAMP}} verbatim (the build script substitutes it), then
+     delete these comments. Layout implements the Figma "Hub Page Template"
+     (file ef1Dz0cIb3jcch5izjk2db, node 1:2); breakpoint behavior below 720px is not
+     specified in the design — the stacking here is the smallest plausible choice. -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{PROJECT_NAME}} — Concept Prototypes</title>
+    <title>{{CLIENT_NAME}} — {{PAGE_NAME}}</title>
     <meta name="robots" content="noindex" />
     <style>
       :root {
-        --bg: #f4f1ec;
-        --ink: #111;
-        --muted: #6b6760;
-        --rule: #1c1c1c;
+        --ink: #000;
+        --muted: #9e9e9e;
+        --hairline: #eee;
+        --rule: #000;
+        --measure: 1000px;
       }
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; }
       body {
-        background: var(--bg);
+        background: #fff;
         color: var(--ink);
-        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        /* Design spec is Helvetica Neue Regular; Arial is the Windows fallback. */
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 400;
         -webkit-font-smoothing: antialiased;
         min-height: 100dvh;
       }
-      .wrap { max-width: 640px; margin: 0 auto; padding: 48px 24px 64px; }
+      .wrap { max-width: var(--measure); margin: 0 auto; padding: 0 24px; }
+
       header {
         display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        padding-bottom: 16px;
-        border-bottom: 1px solid var(--rule);
-        margin-bottom: 48px;
+        gap: 80px;
+        align-items: flex-start;
+        padding: 100px 0;
+        border-bottom: 10px solid var(--rule);
       }
-      .mark { font-weight: 500; letter-spacing: 0.02em; font-size: 14px; }
-      .meta, h2, .kind, footer {
+      .titles { flex: 1 0 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+      .titles p {
+        margin: 0;
+        font-size: clamp(36px, 6vw, 60px);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        overflow-wrap: break-word;
+      }
+      .titles .page { color: var(--muted); }
+      .context { flex: 1 0 0; min-width: 0; }
+      .context p { margin: 0; font-size: 16px; line-height: 1.4; }
+
+      main { padding-bottom: 48px; }
+      section { padding-top: 48px; }
+      section h2 {
+        margin: 0;
+        padding: 24px 0;
+        font-size: 16px;
+        line-height: 1.4;
+        font-weight: 400;
         color: var(--muted);
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
       }
-      section { margin-bottom: 40px; }
-      h2 { margin: 0 0 12px; font-weight: 500; }
-      ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
-      li { border-bottom: 1px solid var(--rule); }
-      a, .row {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 16px;
-        padding: 14px 0;
+      ul { list-style: none; margin: 0; padding: 0; }
+      li { border-top: 1px solid var(--hairline); }
+      li a {
+        display: block;
+        padding: 24px 0;
+        font-size: 20px;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
         text-decoration: none;
         color: inherit;
-        font-size: 15px;
       }
-      a:hover { color: var(--muted); }
-      .row.is-disabled { color: var(--muted); }
-      .kind { flex-shrink: 0; }
+      li a:hover { color: var(--muted); } /* TODO(design): hover state unspecified */
+
       footer {
-        margin-top: 64px;
-        padding-top: 16px;
-        border-top: 1px solid var(--rule);
         display: flex;
-        justify-content: space-between;
+        gap: 80px;
+        align-items: flex-start;
+        padding: 100px 0;
+        border-top: 1px solid var(--rule);
+      }
+      .logo { flex: 1 0 0; min-width: 0; }
+      .logo svg, .logo img { display: block; height: 24px; width: auto; }
+      .disclaimers {
+        flex: 1 0 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 16px;
+        line-height: 1.4;
+        color: var(--muted);
+      }
+      .disclaimers p { margin: 0; }
+
+      @media (max-width: 720px) {
+        header, footer { flex-direction: column; gap: 40px; padding: 64px 0; }
       }
     </style>
   </head>
   <body>
     <div class="wrap">
       <header>
-        <div class="mark">{{CLIENT_MARK}}</div>
-        <div class="meta">Concept prototypes</div>
+        <div class="titles">
+          <p>{{CLIENT_NAME}}</p>
+          <p class="page">{{PAGE_NAME}}</p>
+        </div>
+        <div class="context">
+          <p>{{CONTEXT_DESCRIPTION}}</p>
+        </div>
       </header>
 
-      <section>
-        <h2>{{PHASE_TITLE}}</h2>
-        <ul>
-          <li>
-            <a href="/{{CONCEPT_SUBPATH}}/">
-              <span>{{CONCEPT_NAME}}</span>
-              <span class="kind">{{CONCEPT_KIND}}</span>
-            </a>
-          </li>
-        </ul>
-      </section>
+      <main>
+        <section>
+          <h2>{{SECTION_NAME}}</h2>
+          <ul>
+            <li>
+              <a href="/{{CONCEPT_SUBPATH}}/">{{CONCEPT_NAME}}</a>
+            </li>
+          </ul>
+        </section>
+      </main>
 
       <footer>
-        <div>Internal review &mdash; not for distribution</div>
-        <div>Last updated {{BUILD_TIMESTAMP}}</div>
+        <div class="logo">
+          <!-- setup-skill: replace with the client logo (inline SVG or copied-in image,
+               24px tall). Placeholder mark ships so the layout reads before branding. -->
+          <svg viewBox="0 0 52 24" width="52" height="24" aria-label="{{CLIENT_NAME}}" role="img">
+            <rect x="0" y="0" width="24" height="24" fill="#000" />
+            <rect x="28" y="0" width="24" height="24" fill="#9e9e9e" />
+          </svg>
+        </div>
+        <div class="disclaimers">
+          <p>Internal review &ndash; not for distribution</p>
+          <p>Last updated {{BUILD_TIMESTAMP}}</p>
+          <p>For questions: {{CONTACT_EMAIL}}</p>
+        </div>
       </footer>
     </div>
   </body>
