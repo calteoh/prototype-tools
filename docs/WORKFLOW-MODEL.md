@@ -52,14 +52,42 @@ project, and it carries more of the adoption load than setup does.
 ### 1 · Preflight — the gate
 *What can't I proceed without?*
 
-Project and client name · platform (responsive web / native / both) · an empty git repo
-· an empty Figma design file · connectors authorised.
+Project and client name · platform (responsive web / native / both) · **a folder on your
+machine** · an empty Figma design file · connectors authorised.
 
-**The rule that defines this stage: only what the agent cannot create for you.** A repo
-and a Figma file need a human. Everything else is intake. That keeps the front door to
-about four questions instead of twenty.
+**The rule that defines this stage: preflight is what blocks the first hour.** Only what
+the agent cannot create for you, and only what you genuinely can't start without. That
+keeps the front door to about four questions instead of twenty.
 
-*Out → an empty repo and an empty library, both reachable.*
+*Out → a local repo and a Figma library, both live in minutes.*
+
+#### Blocking vs parallel — never gate on org provisioning
+
+A git repo is **not** a GitHub repo. `git init` is local, instant, and needs no ticket,
+no network, and no permission — the whole dry run (docs, tokens, Figma push, static
+build, sync round trip) ran on a local repo with no remote.
+
+Org-provisioned things — a git remote (often 2–3 days), Figma seats for the client team,
+font licences, Notion access — go on a **parallel track**: filed on day 0, checkpointed
+later, blocking nothing. A gate that waits on the slowest organizational dependency
+isn't a gate, it's a stall.
+
+The remote's checkpoint sits at **Orient**, which is exactly when other people need
+access:
+
+```bash
+git remote add origin <url> && git push -u origin main
+```
+
+Full history transfers; nothing from days 0–2 is redone. Request the repo **empty** — an
+auto-created README diverges the histories and costs you a rebase on day 3.
+
+While local-only, back the work up: Time Machine, or
+`git bundle create backup.bundle --all` into cloud storage. **Never let a file-sync
+client live-sync an active `.git` directory** — it corrupts silently.
+
+Preflight should also emit the **repo request text** (name, private, org/team, access
+list, "create empty"), because a rejected request restarts the 2–3 day clock.
 
 ### 2 · Intake — the brief
 *What informs the foundations, and what do we decide up front?*
@@ -151,6 +179,12 @@ The loop gets its own verbs: **`/design-audit`** (read-only, safe any time) →
 
 **This model adds:** the `references/` folder + `INGESTED.md` manifest · `BRIEF.md` ·
 Orient as a real stage · the joiner path · audit-first `/design-audit` · the per-layer
-source-of-truth table · resumable, self-locating entry.
+source-of-truth table · resumable, self-locating entry · **local-first preflight with a
+parallel track for org provisioning, and a remote-attach checkpoint at Orient**.
+
+Note that `plugins/project-setup/skills/project-setup/SKILL.md` already accepts
+"local-only for now" as an option in its preflight — this model promotes that from an
+afterthought clause to the **default path**, with the pending remote tracked so its
+checkpoint can't be silently forgotten.
 
 That gap list is the backlog. Sequence it after the model is agreed — not before.
