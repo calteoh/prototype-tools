@@ -150,6 +150,73 @@ Triggered by any of: a designer edits a variable in Figma · a dev edits a token
 non-technical users, and gives a reason to open the tool on a Monday without a specific
 task in mind — which is what adoption actually looks like.
 
+## Reference lifecycle — what happens when a reference changes
+
+The loop above is additive: references arrive and produce things. Removal,
+supersession, and drift run *backwards* through that arrow, and they only work if one
+thing is true — **`INGESTED.md` is a provenance ledger, not a log.** It must record the
+derivation link (this token came from that reference, at that location), because
+otherwise "what breaks if this goes away?" has no answer.
+
+The seed already exists in prose: the token draft cites sources, and DESIGN.md's
+Decided table has a *Why / source* column. This makes it machine-readable and
+bidirectional. It also sizes the ceremony correctly — pull an inspiration screenshot
+nothing derives from and it's a silent delete; pull the brand palette and a dozen
+tokens just lost their justification.
+
+**The non-negotiable: removal never cascades.** Deleting a reference must not revert
+what it produced — those values are in live screens, and some were deliberately changed
+since. Detect, report, ask. Never auto-revert.
+
+So **Capture is three verbs, not one**:
+
+**Add** — the additive path already described.
+
+**Supersede** (brand v2 replaces v1) — *the same three-way merge the sync engine already
+does*, with the reference as the third leg: base = what v1 produced, ours = the current
+live value, theirs = what v2 implies. Four outcomes: v2 changed and we didn't → adopt ·
+both changed → conflict, ask, showing all three · v2 silent on something we hold → soft
+orphan, flagged not deleted · v2 introduces something new → propose it, and if it's
+*structural* (adds a mode, adds a type style) raise it as a DESIGN.md decision rather
+than a silent addition. v1 moves to `references/<kind>/_archive/` marked
+superseded-by — never deleted, or every old "why" in DESIGN.md rots. (Git history isn't
+an answer for an audience that doesn't use git.)
+
+**Retire** — the ledger produces an orphan report: *"8 tokens were justified by
+brand-v1.pdf, which is gone."* Three honest options per orphan: keep and mark
+adopted-without-source · re-source to another reference · retire the token. Retiring a
+token in **Figma means moving the variable to an `archive/` group, never deleting it** —
+designs may be bound to it and deletion breaks them silently.
+
+### Dynamic references
+
+A live URL, a Notion page, someone else's Figma library changes with no event. **A URL
+isn't a reference until you snapshot it** — at ingest, save the fetched content (for a
+standards-site brand page, the JSON payload), hash it, record the check date. Without a
+snapshot there's no base, and with no base there's no diff.
+
+Each dynamic reference declares a policy:
+
+- **pinned** — deliberately frozen for this phase, recorded as a decision so nobody
+  later wonders why the live site disagrees.
+- **tracking** — the audit re-fetches and compares hashes; drift becomes *"the brand
+  site changed since Jul 28 — 2 of your primitives came from it. Re-derive?"*, which
+  hands off to the supersession flow above.
+
+### The consequence
+
+Audit gains a second dimension: not just "do the surfaces disagree?" but "is the source
+that justified this still there, still current, still saying the same thing?"
+
+And **the fix is mostly upstream, in Intake** — supersession only works if ingest
+recorded derivations in the first place. This is a discipline at the moment tokens get
+drafted, not a bolt-on to Evolve.
+
+**Open** (not yet decided, not yet drawn on the board): whether `pinned` is the default
+for dynamic references (instinct: yes — a surprise brand change mid-project is worse
+than a stale one), and whether supersession runs automatically inside `/design-audit`
+or waits for someone to say "I've dropped a new version."
+
 ## Two principles worth stating separately
 
 **Materials are a place, not a stage.** "Where do I put references at the start?" and
