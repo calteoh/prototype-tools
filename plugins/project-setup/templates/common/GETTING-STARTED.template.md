@@ -138,13 +138,36 @@ disappears on the shared build, this is why.
 
 | Path | What |
 |---|---|
-| [`CLAUDE.md`](CLAUDE.md) | How we build — stack, conventions, do/don'ts. |
-| [`DESIGN.md`](DESIGN.md) | Design-system decisions, tokens, open questions. |
+| [`AGENTS.md`](AGENTS.md) | How we build — stack, conventions, do/don'ts. The canonical spec any AI assistant should read first. |
+| [`CLAUDE.md`](CLAUDE.md) | One-paragraph pointer to `AGENTS.md` for Claude Code. |
+| [`DESIGN.md`](DESIGN.md) | Design-system **identity** — colours, base type, base spacing, motion durations. |
+| [`IMPLEMENT.web.md`](IMPLEMENT.web.md) | Design-system **web behaviour** — breakpoints, responsive overrides, grid, image aspects. |
 | [`TONE-OF-VOICE.md`](TONE-OF-VOICE.md) | How we write copy. |
+| `.cursor/rules/agents.mdc` | Cursor's always-apply rule — points at `AGENTS.md` and names the runbooks by intent. |
+| `.agents/runbooks/` | Agent-agnostic procedures (`sync-tokens.md`, `figma-library-push.md`) — the single source of truth. |
 | `{{CURRENT_CONCEPT_PATH}}/` | The current prototype (the app you run). |
 | `shared/` | Fonts, logos, exported frames to **copy** into an app. |
+
+## 7. Working with AI agents
+
+Any agentic AI assistant works with this project. Three targets are wired
+out of the box:
+
+- **Claude Code** — reads `CLAUDE.md` (a pointer to `AGENTS.md`) and finds
+  `/sync-tokens` and `/figma-library-push` as slash commands.
+- **Cursor** — picks up the always-apply rule at `.cursor/rules/agents.mdc`
+  and follows the same runbooks when your intent matches.
+- **Codex CLI** — reads `AGENTS.md` natively and follows a runbook when asked.
+
+Any other agentic assistant works too: point it at `AGENTS.md` at the repo
+root and let it read from there. The maintenance procedures live at
+`.agents/runbooks/` as plain markdown any agent can follow.
+
+Capability boundary: this assumes an agent that can execute shell commands,
+run `npx`, and call the Figma MCP. Sub-agentic tooling (in-editor
+completions, plain LLM chat) is out of scope.
 
 ---
 
 **You're set.** `cd {{CURRENT_CONCEPT_PATH}}`, run it, and edit a screen to watch it
-update. When you're ready to build for real, skim [`CLAUDE.md`](CLAUDE.md).
+update. When you're ready to build for real, skim [`AGENTS.md`](AGENTS.md).

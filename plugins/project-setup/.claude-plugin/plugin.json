@@ -1,7 +1,7 @@
 {
   "name": "project-setup",
-  "version": "0.2.0",
-  "description": "Project setup: scaffolds a prototyping repo (Expo and/or Next.js) with designer-friendly docs, launches a Figma design library from brand materials, and keeps design tokens in sync between Figma and code via /sync-tokens.",
+  "version": "0.5.0",
+  "description": "Project setup in two steps: /project-start makes a repo and a folder to drop brand materials into, /project-create builds the prototyping project from them — one platform per project, designer-friendly docs, a canonical DESIGN.md (identity) and IMPLEMENT.web.md (web behaviour), and a populated Figma design library. /sync-tokens regenerates everything derived from the two files. Generated projects are agent-agnostic (Claude Code, Cursor, Codex CLI first-class).",
   "author": {
     "name": "Calvin Teoh"
   }

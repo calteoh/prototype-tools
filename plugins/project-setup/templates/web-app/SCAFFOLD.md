@@ -48,16 +48,23 @@ import { asset } from "@/lib/asset";
 
 ## 3. Tokens
 
-- Canonical file: `styles/tokens.json` (prototype-tokens-v1 shape — see
-  `../common/tokens/TOKENS-FORMAT.md`).
-- Emitted file: `styles/tokens.css` — CSS custom properties on `:root`, one
-  `--kebab-name` per semantic token, plus `.t-<style>` classes per `fontSize` entry.
-  Import it in `app/globals.css`. Dark mode (if enabled) emits a
+- Canonical files: `DESIGN.md` (identity — colours, base type, base spacing,
+  motion durations/easings) and `IMPLEMENT.web.md` (web behaviour —
+  breakpoints, container max, responsive typography and spacing overrides, plus
+  the empty prompt sections for motion assignments, grid, component behaviour,
+  image aspects, colour modes), both at the repo root. Their front matter is
+  the token set. See `../common/DESIGN.template.md` and
+  `../common/IMPLEMENT.web.template.md`. No `tokens.json` is emitted.
+- Emitted file: `styles/tokens.css` — CSS custom properties on `:root` from
+  DESIGN.md, one `--kebab-name` per semantic token, plus `.t-<style>` classes
+  per `fontSize` entry. Responsive overrides come from IMPLEMENT.web.md's
+  `responsive` block, wrapped in a single `@media (min-width: <breakpoints.large>)`
+  block. Import it in `app/globals.css`. Dark mode (if enabled) emits a
   `[data-theme="dark"]` block overriding the semantic colors.
 - Tailwind is **layout shorthand** (`flex`, `grid`, `absolute inset-0`, `truncate`);
   token values reach it via arbitrary values: `text-[var(--fg-primary)]`,
   `p-[var(--side-pad)]`. Don't rebuild the token layer inside Tailwind's `@theme` —
-  one source of truth, and `/sync-tokens` rewrites `tokens.json` + `tokens.css` only.
+  one source of truth, and `/sync-tokens` rewrites `tokens.css` only.
 
 Example emission for one token: `colors.fg.primary: "#121212"` →
 `--fg-primary: #121212;` and Figma code syntax `var(--fg-primary)`.
@@ -86,8 +93,7 @@ One broken concept never takes down the others.
 │   ├── globals.css          # imports ./tokens.css (relative import from styles/)
 │   └── page.tsx             # starter page, token-styled
 ├── styles/
-│   ├── tokens.json          # canonical (written by setup / sync-tokens)
-│   └── tokens.css           # emitted (never hand-edit)
+│   └── tokens.css           # emitted from DESIGN.md + IMPLEMENT.web.md (never hand-edit)
 └── public/                  # images, fonts — referenced via asset()
 ```
 
@@ -99,7 +105,7 @@ fonts — proof on first run that the token pipeline works.
 `@font-face` in `globals.css`, files in `public/fonts/`, `src` paths through
 `asset()`-compatible relative URLs (`url("../public/fonts/…")` resolves at build
 time; verify in the stitched build, not just dev). One `@font-face` per weight file;
-font-family names must match `tokens.json` `fontFamily` entries.
+font-family names must match the `fontFamily` values in DESIGN.md.
 
 ## 7. Animation
 

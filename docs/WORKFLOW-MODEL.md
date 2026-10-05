@@ -27,8 +27,9 @@ a **spine** — the persistent context surfaces that setup creates and evolution
                                               │ record ──┐             │
                                               └──────────┴─ next lap ──┘
 
-  SPINE: references/ (+INGESTED.md) · BRIEF.md · DESIGN.md ·
-         tokens.json + tokens.lock.json · Figma library · shared/
+  SPINE: references/ (+INGESTED.md) · BRIEF.md · DESIGN.md (identity) +
+         IMPLEMENT.web.md (web behaviour) · tokens.lock.json · Figma library ·
+         shared/
 ```
 
 **Design work sits in the middle on purpose.** The loop exists to keep foundations
@@ -52,8 +53,9 @@ project, and it carries more of the adoption load than setup does.
 ### 1 · Preflight — the gate
 *What can't I proceed without?*
 
-Project and client name · platform (responsive web / native / both) · **a folder on your
-machine** · an empty Figma design file · connectors authorised.
+Project and client name · platform — **responsive web or native, one per project**,
+never both · **a folder on your machine** · an empty Figma design file · connectors
+authorised.
 
 **The rule that defines this stage: preflight is what blocks the first hour.** Only what
 the agent cannot create for you, and only what you genuinely can't start without. That
@@ -95,7 +97,12 @@ list, "create empty"), because a rejected request restarts the 2–3 day clock.
 Materials go into **`references/`** — brand, fonts, icons, inspiration, content, plus a
 `links.md` for the things that are URLs rather than files. The agent **reads what's
 there first**, then asks only the gaps it couldn't infer. Decisions get made here too:
-dark mode, breakpoints, spacing base, typescale, phases, and the source-of-truth table.
+spacing base, typescale, the colour mode, the layout threshold, phases, and the
+source-of-truth table.
+
+Most of those arrive **pre-answered**. The settings sheet lands filled in from
+`DEFAULTS.md`, so intake is a review of defaults rather than an interrogation — a
+blank form is a wall, and designers bounce off walls.
 
 Two properties make or break this stage:
 
@@ -113,10 +120,13 @@ brief **is** that context, and CLAUDE.md just routes to it.
 ### 3 · Scaffold — the build
 *What actually gets created?*
 
-Repo and docs · concept app(s) (Expo pinned to the live Expo Go SDK, and/or Next.js
-static export) · `tokens.json` emitted to CSS custom properties and/or a Tailwind theme
-· the Figma library (collections, light/dark modes, text styles, token sheets) · the
-review hub page and double-click launchers.
+Repo and docs · concept app(s) for the one chosen platform (Next.js static export, or
+Expo pinned to the live Expo Go SDK) · `DESIGN.md` (identity) and — on a web
+project — `IMPLEMENT.web.md` (behaviour), emitted to CSS custom properties
+with media-query overrides and a Tailwind/NativeWind theme · the Figma
+library (Colour collection at one mode, Scale collection at Small from
+DESIGN.md and Large from IMPLEMENT.web.md, text styles, mode-pinned token
+sheets) · the review hub page and double-click launchers.
 
 *Out → a repo that runs, a library designers can use, and `tokens.lock.json` — the
 baseline every future sync diffs against.*
@@ -131,7 +141,17 @@ human checklist (install fonts in Figma, publish the library — no API does the
 Scaffold ends when the agent stops; orient is where the human starts. Different actor,
 often a different day, sometimes a different person entirely.
 
-*Out → a person who can work unaided.*
+**The joiner picks up the repo in the agent of their choice.** The generated
+project is agent-agnostic: `AGENTS.md` at the repo root is the canonical
+spec-for-agents, and three targets are first-class — Claude Code (via
+`CLAUDE.md`'s pointer and the `/sync-tokens`, `/figma-library-push` slash
+commands), Cursor (via the always-apply rule at `.cursor/rules/agents.mdc`),
+and Codex CLI (which reads `AGENTS.md` natively). If the joiner uses one of
+those three, everything is wired. Anything else — point the agent at
+`AGENTS.md` and let it read from there; the maintenance runbooks under
+`.agents/runbooks/` are plain markdown any agent can follow.
+
+*Out → a person who can work unaided, in the agent of their choice.*
 
 ### 5 · Evolve — the loop
 *How do decisions propagate across Figma and code?*
@@ -149,6 +169,16 @@ Triggered by any of: a designer edits a variable in Figma · a dev edits a token
 **Audit-first is deliberate.** A read-only drift report before any write is safer for
 non-technical users, and gives a reason to open the tool on a Monday without a specific
 task in mind — which is what adoption actually looks like.
+
+**This whole stage is the v2 half, and v1 does not implement it.** The loop above is
+the target model. What ships in v1 is emission only: DESIGN.md or IMPLEMENT.web.md
+changes, `/sync-tokens` pushes them to CSS, the theme and Figma, and nothing is ever
+read back. Steps 2 through 4 — audit, decide, propagate — all require a reconciliation
+policy that has deliberately not been designed, so building half of it would produce
+something that looks finished at exactly the moment it is not. The concrete v1
+consequence: **a variable edited directly in Figma gets overwritten by the next
+sync**, and the honest workaround is typing the value into DESIGN.md (if it is
+identity) or IMPLEMENT.web.md (if it is behaviour) by hand.
 
 ## Reference lifecycle — what happens when a reference changes
 
@@ -172,8 +202,8 @@ So **Capture is three verbs, not one**:
 
 **Add** — the additive path already described.
 
-**Supersede** (brand v2 replaces v1) — *the same three-way merge the sync engine already
-does*, with the reference as the third leg: base = what v1 produced, ours = the current
+**Supersede** (brand v2 replaces v1) — *the same three-way merge the v2 sync engine
+will need*, with the reference as the third leg: base = what v1 produced, ours = the current
 live value, theirs = what v2 implies. Four outcomes: v2 changed and we didn't → adopt ·
 both changed → conflict, ask, showing all three · v2 silent on something we hold → soft
 orphan, flagged not deleted · v2 introduces something new → propose it, and if it's
@@ -230,28 +260,53 @@ flows Notion → repo, component structure in a prototyping context often flows 
 Figma. Declared as a small table in DESIGN.md, the audit knows which direction is
 normal and which is drift worth flagging.
 
+In v1 the token layer is pinned to one direction — code-led, DESIGN.md and
+IMPLEMENT.web.md outward — because honouring a declared Figma → code direction
+*is* the reconciliation engine that has not been designed. The per-layer table
+is still worth writing down now; it just does not have anything reading it yet.
+
 ## Command shape
 
-**One resumable `/project-setup`.** It reads the repo, works out which stage you're in,
-and picks up there — so the journey survives being spread across days and people, and
-there's one thing to remember rather than four in the right order.
+**Setup is two commands, not one.** `/project-start` asks the questions and scaffolds
+the `_setup/` folder; `/project-create` reads the settings sheet and builds. The split
+exists because gathering materials takes days — a font file lands Thursday — and a
+single command has to either block on that or pretend it did not happen. Two commands
+make the waiting a stage with a name rather than an awkward pause in a conversation
+someone feels guilty about leaving open. Both are self-locating, so either can be
+re-run and will work out where things stand.
 
-The loop gets its own verbs: **`/design-audit`** (read-only, safe any time) →
-**`/sync-tokens`** → **`/import-copy`**.
+**Maintenance is a family, and its defining property is being safe to re-run.**
+`/project-check` (read-only state report), `/project-share` (regenerates the hub and
+review bundle) and `/sync-tokens` (regenerates everything derived from DESIGN.md and
+IMPLEMENT.web.md) are all pure functions of something else, which is what makes
+running them twice harmless. `/import-copy` brings writer content in from Notion.
 
-## Where the current plugin stands (v0.2.0)
+**`/design-audit`** — read-only drift reporting — is v2, and is the first half of the
+deferred reconciliation work.
 
-**Exists:** preflight · intake (conversational) · scaffold · `/sync-tokens` ·
-`/import-copy`.
+## Where the current plugin stands (v0.5.0)
 
-**This model adds:** the `references/` folder + `INGESTED.md` manifest · `BRIEF.md` ·
-Orient as a real stage · the joiner path · audit-first `/design-audit` · the per-layer
-source-of-truth table · resumable, self-locating entry · **local-first preflight with a
-parallel track for org provisioning, and a remote-attach checkpoint at Orient**.
+**Exists:** `/project-start` and `/project-create` as the two-command split · the
+`_setup/` folder with its four drop folders and pre-filled settings sheet ·
+local-first git as the default path · `/sync-tokens`, now emission-only, driven
+by the identity/behaviour split · `/figma-library-push` · `/import-copy` ·
+`DEFAULTS.md` as the single home for defaulted values · the DESIGN.md
+(identity) and IMPLEMENT.web.md (web behaviour) canonical formats and their
+templates · **agent-agnostic generated output** (canonical `AGENTS.md`,
+one-paragraph `CLAUDE.md` pointer, always-apply Cursor rule, single-source
+runbooks under `.agents/runbooks/` with thin per-platform adapters).
 
-Note that `plugins/project-setup/skills/project-setup/SKILL.md` already accepts
-"local-only for now" as an option in its preflight — this model promotes that from an
-afterthought clause to the **default path**, with the pending remote tracked so its
-checkpoint can't be silently forgotten.
+The old single `/project-setup` orchestrator has been **deleted**, not deprecated. It
+wrote `tokens.json` and offered a both-platforms option, so leaving it installed
+meant leaving something an agent could trigger that would produce a project the rest
+of the system no longer understands. It remains in git history.
+
+**Settled but not yet built:** `/project-check` and `/project-share`, the maintenance
+pair · attaching a remote as its own small event.
+
+**This model adds, still open:** the `references/` folder + `INGESTED.md` manifest ·
+`BRIEF.md` · Orient as a real stage · the joiner path · audit-first `/design-audit` ·
+the per-layer source-of-truth table honoured by tooling · the reference lifecycle
+verbs.
 
 That gap list is the backlog. Sequence it after the model is agreed — not before.

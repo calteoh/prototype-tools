@@ -10,7 +10,7 @@
     {
       "name": "project-setup",
       "source": "./plugins/project-setup",
-      "description": "Scaffold a new prototyping project across a GitHub repo and a Figma design library: repo structure, designer-friendly docs, app boilerplate (Expo / Next.js), brand-derived design tokens, and ongoing Figma↔code token sync."
+      "description": "Scaffold a new prototyping project across a git repo and a Figma design library: repo structure, designer-friendly docs, app boilerplate (Next.js or Expo), brand-derived design tokens in a canonical DESIGN.md, and token emission to CSS, the theme and Figma. Generated projects are agent-agnostic — Claude Code, Cursor and Codex CLI first-class."
     }
   ]
 }

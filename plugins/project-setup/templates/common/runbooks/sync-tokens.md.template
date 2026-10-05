@@ -1,0 +1,164 @@
+# Runbook — sync tokens
+
+> This runbook is invoked by Claude Code's `/sync-tokens` slash command (via
+> `.claude/skills/sync-tokens/SKILL.md`), by Cursor's always-apply rule at
+> `.cursor/rules/agents.mdc` when the user's intent matches, and by any other
+> agent pointed here from `AGENTS.md`. The procedure is identical whichever
+> agent invokes it.
+
+Regenerate everything derived from the project's canonical design-system files
+— `DESIGN.md` for identity and `IMPLEMENT.web.md` for web behaviour — into CSS
+custom properties (with media-query overrides), the Tailwind/NativeWind theme,
+the Figma variable library, the mode-pinned token sheets, and
+`tokens.lock.json`. One direction only, code-led.
+
+Anyone on the team can run this — assume **zero git or Figma-plugin knowledge**.
+Everything the user sees must be plain language ("brand primary is now #E8112D in
+all four places"), never ids or raw JSON diffs.
+
+Safe to run any number of times. This is a **maintenance procedure**: its output
+is a pure function of `DESIGN.md` and `IMPLEMENT.web.md`, so running it twice
+does the same thing as running it once, and running it when nothing changed does
+nothing.
+
+## One direction, deliberately
+
+`DESIGN.md` is canonical for identity; on a web project `IMPLEMENT.web.md` is
+canonical for behaviour. This runbook pushes both outward and **never reads
+anything back**.
+
+**In scope:** regenerate CSS custom properties · regenerate the Tailwind/NativeWind
+theme · re-push the Figma variable library · refresh the mode-pinned token sheets ·
+update `tokens.lock.json`.
+
+**Not in scope, and not a bug:** reading Figma as a source · detecting drift ·
+resolving conflicts · three-way merges · anything that asks the operator to choose
+between two versions of a value.
+
+**A variable edited directly in Figma will be overwritten by the next run, with no
+warning and no record that it existed.** That includes Description, not just
+values. Say this out loud whenever a user implies they have been editing in
+Figma — it is the one way this runbook can lose someone's work, and it is much
+cheaper to say than to recover from.
+
+Someone who has made Figma edits they want to keep has one honest path: read the
+values off the Figma sheet, type them into DESIGN.md (identity) or IMPLEMENT.web.md
+(behaviour) — descriptions as a trailing `#` comment on the token's YAML line —
+then invoke this runbook. Tedious on purpose. Automating it is the v2 work below.
+
+### Where this is going
+
+Reading Figma back needs a reconciliation policy — which side wins, per layer, and
+what happens when both moved — and that policy has deliberately not been designed
+yet. Until it exists, a two-way sync would be guessing at the moment it matters
+most. v2 adds `/design-audit` (read-only drift reporting) first, then reconciliation
+on top of it. Read-only comes first so the risky half is never the first half built.
+
+## Step 1 — Locate and validate
+
+1. Find `DESIGN.md`. More than one → ask which project. On a web project also
+   find its sibling `IMPLEMENT.web.md`. Missing on a web project → stop and
+   report it; the emission below needs both files.
+2. **Lint before emitting anything**: `npx --yes @google/design.md lint DESIGN.md`.
+   - Any **error** → stop. Report it in plain language and fix the file first.
+     Emitting from a broken DESIGN.md propagates the break into four places.
+   - **Warnings**: five are expected and allowlisted — one `token-like-ignored` on
+     `extensions`, four `orphaned-tokens` on `line-primary`, `state-hover`,
+     `state-pressed`, `state-selected`. Reasons are recorded in the plugin's
+     `DEFAULTS.md`. Report anything outside those five; don't block on it.
+3. **Parse `IMPLEMENT.web.md` as YAML.** A parse error → stop and report it;
+   the design.md CLI does not lint this file. Then validate: every base token
+   named under `responsive.typography` and `responsive.spacing` must exist in
+   DESIGN.md. A dangling reference (e.g. `responsive.spacing.foo` with no
+   `spacing.foo` in DESIGN.md) → stop. Emitting from a broken reference writes
+   a media query for a variable that has no base value, which is worse than
+   not emitting at all.
+4. Read `tokens.lock.json` if present and resolve the **active phase**.
+   **If the active phase is `frozen: true`, stop.** A frozen library is finished by
+   definition. The fix is starting a new phase, not writing to a closed one.
+5. No lock file and a Figma file is configured → this project has never had a
+   library pushed. Follow `.agents/runbooks/figma-library-push.md` instead
+   (Claude Code: `/figma-library-push`); it creates the baseline.
+
+## Step 2 — Emit the code surfaces
+
+Both are generated whole and overwrite in place. Never merge into an existing file
+— a generated file with hand edits in it is the problem this design exists to
+prevent.
+
+**CSS custom properties** (`styles/tokens.css`), one `--kebab-name` per token on
+`:root` from DESIGN.md, plus `.t-<style>` classes per typography entry.
+Responsive overrides come from IMPLEMENT.web.md's `responsive` table, wrapped
+in a single `@media` block whose threshold is `breakpoints.large`. Screens
+reference one name at every width:
+
+```css
+:root { --space-lg: 24px; }
+@media (min-width: 960px) { :root { --space-lg: 32px; } }
+```
+
+Here the base `24px` comes from `spacing.lg` in DESIGN.md; the override `32px`
+comes from `responsive.spacing.lg."@large"` in IMPLEMENT.web.md; the threshold
+`960px` comes from `breakpoints.large` in IMPLEMENT.web.md. All three are read
+live — never hardcoded here.
+
+A token with no matching `responsive.<block>.<name>."@large"` entry gets no
+media query. Absence is meaningful: it means the value is deliberately the same
+at every width.
+
+**Tailwind / NativeWind theme.** On web the theme maps names to `var(--…)` so the
+media query above stays the single place a responsive value is decided. On native
+NativeWind consumes the theme directly, and v1 emits **base values only** —
+IMPLEMENT.web.md is web-specific; native has no equivalent file, so no
+responsive tier is emitted. Remind the user that Metro needs `npx expo start -c`
+to pick up config changes.
+
+**`extensions` values must be emitted by this step, not by the CLI.** Motion,
+opacity, border and focus geometry live under a custom key that the official
+`export` command silently drops. Emit them as custom properties directly.
+
+## Step 3 — Push Figma
+
+Delegate to `.agents/runbooks/figma-library-push.md` and follow it exactly —
+collection structure, the Large-mode source (IMPLEMENT.web.md's `responsive`
+block), scopes, code syntax, variable descriptions, and the font recipe all
+live there and are not restated here.
+
+In short: the Colour collection takes one mode; the Scale collection takes
+Small and Large; the Large-mode value of a Scale variable comes from
+IMPLEMENT.web.md's `responsive.<block>.<name>."@large"` entry, and the Small
+(base) value comes from DESIGN.md. One variable, two modes, two sources.
+Update values on existing variables by id from the lock file, create only what
+is genuinely new, and archive rather than delete anything that disappeared —
+designs may be bound to it and deleting breaks them silently.
+
+Then refresh both mode-pinned token sheets so the read-points still show every
+token, and verify with `get_variable_defs` on each sheet node. The verification is
+the only proof the push actually landed; a `use_figma` script that fails is atomic,
+so a silent failure looks exactly like a success from the outside.
+
+No Figma file configured, or the write path unavailable → emit the code surfaces
+anyway, then report Figma as skipped. The code half standing alone is useful; making
+it wait on Figma is not.
+
+## Step 4 — Update the lock, report
+
+Rewrite the **active phase's entry** in `tokens.lock.json` — new value snapshot, any
+new variable ids, `pushedAt` from `date -u +%Y-%m-%dT%H:%M:%SZ`. Never touch another
+phase's entry, frozen or not.
+
+Then report in plain language: which values changed, which surfaces were written,
+what was skipped and why. Add the human-only reminders when relevant — new fonts
+must be installed in Figma by a person, and library changes need re-publishing in
+the Figma UI before other files see them.
+
+## Guardrails
+
+- **Never write a partial run to Figma.** Compute the full variable set first.
+- A corrupted lock file → don't hand-fix it. Re-run `.agents/runbooks/figma-library-push.md`
+  (Claude Code: `/figma-library-push`), which rebuilds the baseline from live state.
+- If a change resolves something in DESIGN.md's "Still to decide" list, say so. The
+  list is only useful if it shrinks when the decision actually gets made.
+- Don't offer a `pull` or `bidirectional` mode, even if asked directly. Explain the
+  limit and the manual path instead. Half a reconciliation engine is worse than
+  none, because it looks like the whole one.

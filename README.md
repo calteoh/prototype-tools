@@ -36,7 +36,12 @@ and add slash-commands to it. This repo doubles as a plugin **marketplace** name
 
 | Plugin | What it adds | Status |
 | --- | --- | --- |
-| [`project-setup`](plugins/project-setup/) | `/project-setup` scaffolds a whole prototyping project (repo, docs, Expo/Next.js app, Figma design library from brand materials); `/sync-tokens` keeps design tokens matched between Figma and code; plus `/figma-library-push` and `/import-copy`. | Experimental |
+| [`project-setup`](plugins/project-setup/) | `/project-start` then `/project-create` scaffold a whole prototyping project (repo, docs, a Next.js or Expo app, a Figma design library inferred from brand materials), with `DESIGN.md` as the canonical source; `/sync-tokens` regenerates everything derived from it; plus `/figma-library-push` and `/import-copy`. | Experimental |
+
+The plugin runs in Claude Code, but **generated projects are agent-agnostic:**
+`AGENTS.md` is the canonical spec-for-agents, with Claude Code, Cursor and Codex
+CLI first-class out of the box and anything else that reads `AGENTS.md` supported
+as a fallback.
 
 Update installed plugins with `/plugin marketplace update prototype-tools`.
 

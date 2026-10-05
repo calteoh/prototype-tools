@@ -81,9 +81,24 @@ module.exports = withNativeWind(config, { input: "./global.css" });
 /// <reference types="nativewind/types" />
 ```
 
-**`tailwind.config.js`** — consumes the canonical tokens file directly:
+**`src/theme/tokens.js`** — generated from `DESIGN.md` by `/sync-tokens`, never
+hand-edited. A plain JS module rather than JSON so NativeWind consumes it with no
+translation step:
 ```js
-const tokens = require("./src/theme/tokens.json");
+// Generated from DESIGN.md. Do not edit — run /sync-tokens.
+module.exports = {
+  colors: { "fg-primary": "#121212", /* … */ },
+  fontFamily: { /* … */ },
+  fontSize: { /* … */ },
+  spacing: { /* … */ },
+  borderRadius: { /* … */ },
+};
+```
+
+**`tailwind.config.js`** — hand-written, and the one file in this pair that a person
+owns:
+```js
+const tokens = require("./src/theme/tokens");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -93,22 +108,30 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
-      // Synced from the Figma design library. Don't hand-edit the values:
-      // run /sync-tokens, which rewrites tokens.json.
+      // Values come from DESIGN.md. Don't hand-edit them here or in tokens.js:
+      // change DESIGN.md and run /sync-tokens.
       // Editing this file needs `npx expo start -c` — Metro caches the config.
       colors: tokens.colors,
       fontFamily: tokens.fontFamily,
       fontSize: tokens.fontSize,
+      spacing: tokens.spacing,
+      borderRadius: tokens.borderRadius,
     },
   },
   plugins: [],
 };
 ```
 
-Import `global.css` at the top of `App.tsx`. If dark mode is enabled for the project,
-tokens.json semantic colors are `{light, dark}` objects — emit them as
-`{ DEFAULT: light, dark: dark }` nested keys or resolve to the light value and note
-dark handling in DESIGN.md; keep it minimum-viable.
+Import `global.css` at the top of `App.tsx`.
+
+Two things the emission does differently on native. Projects ship **one colour mode**,
+so semantic colours are flat strings rather than light/dark pairs. And of the two
+layout modes, only **base (Small) values** are emitted here — responsive behaviour
+lives in `IMPLEMENT.web.md` on the web path, and **there is no `IMPLEMENT.native.md`
+in v1**. Native is the basic-support platform; a native project that genuinely needs
+both widths handles it in the screens and records that in DESIGN.md. When native
+gets promoted to full support, an `IMPLEMENT.native.md` template lands alongside
+`IMPLEMENT.web.template.md`.
 
 ## 3. Baseline dependencies
 
@@ -143,7 +166,7 @@ them (and enables remote client reviews).
 ├── src/
 │   ├── screens/StarterScreen.tsx
 │   ├── components/
-│   ├── theme/tokens.json    # canonical tokens (written by setup / sync-tokens)
+│   ├── theme/tokens.js      # emitted from DESIGN.md (never hand-edit)
 │   ├── theme/fonts.ts       # useFonts map, one entry per weight file
 │   └── data/mock.ts         # mock content, tone-of-voice compliant
 └── assets/fonts/            # copied in from /shared — never require() across roots

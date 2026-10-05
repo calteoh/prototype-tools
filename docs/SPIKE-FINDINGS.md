@@ -20,6 +20,16 @@ org drafts for the purpose (safe to delete once findings are recorded here).
   `setExplicitVariableModeForCollection`.
 - **Updating existing variable values** (the sync push case).
 
+## API-supported, not exercised in this spike
+
+- **`Variable.description`** — writable string, same class as
+  `hiddenFromPublishing`. Assignment is `variable.description = "…"`. The REST
+  Variables API also accepts `description` on CREATE/UPDATE (Enterprise-gated).
+  `get_variable_defs` does not return it; a read-only `use_figma` script that
+  walks `figma.variables.getLocalVariables()` does. Wired into the library-push
+  runbook as overwrite-from-code, sourced from trailing `#` comments on
+  DESIGN.md YAML lines.
+
 ## Read-back via `get_variable_defs` (official read tool)
 
 Returns the variables **consumed in the queried node's subtree**, keyed by **code

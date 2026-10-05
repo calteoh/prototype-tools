@@ -1,0 +1,367 @@
+# Runbook — Figma library push
+
+> This runbook is invoked by Claude Code's `/figma-library-push` slash command
+> (via `.claude/skills/figma-library-push/SKILL.md`), by Cursor's always-apply
+> rule at `.cursor/rules/agents.mdc` when the user's intent matches, and by any
+> other agent pointed here from `AGENTS.md`. The procedure is identical
+> whichever agent invokes it. It is also invoked from the sync-tokens runbook
+> as its Figma step.
+
+Create or update the project's Figma design library — variable collections,
+modes, aliases, scopes, code syntax, descriptions, text styles, token-sheet
+frames — from the canonical design-system files (`DESIGN.md` for identity and,
+on a web project, `IMPLEMENT.web.md` for Large-mode behaviour). Verify by
+read-back and write `tokens.lock.json`.
+
+Writes the design-system values layer into the project's Figma file, through the
+**official Figma MCP** (claude.ai connector) — no desktop plugin needed. Everything
+here is idempotent: inspect first, update what exists, create only what's missing,
+never duplicate.
+
+The mechanics below — collections, modes, aliases, scopes, code syntax,
+mode-pinned frames — were verified end-to-end in 2026-07. Variable
+`description` is a writable Plugin API string (same class as
+`hiddenFromPublishing`); it was not exercised in that spike. Write it anyway;
+if the assignment throws, skip descriptions and continue. The **shape** those
+mechanics are applied to changed twice since: in 2026-08 when DESIGN.md became
+canonical (no primitives collection, a two-mode Scale collection); and again
+when identity and behaviour split into DESIGN.md and IMPLEMENT.web.md
+(Large-mode values now come from IMPLEMENT.web.md's `responsive` block rather
+than from `-lg` suffixed twins in DESIGN.md). Individual calls are proven; this
+particular arrangement of them has not had a full run yet. Treat step 5's
+read-back as load-bearing.
+
+## Before any write
+
+1. Load the Figma **figma-use** guidance: the `/figma-use` skill if installed, else
+   read `skill://figma/figma-use/SKILL.md` via the Figma MCP, plus
+   `references/variable-patterns.md` (and `text-style-patterns.md` when creating text
+   styles). Non-negotiable — it prevents the known failure modes.
+2. `whoami` → note plan tier. Starter tier allows **1 mode per collection**, which
+   collides with the two layout modes. On a starter-tier file, push the base
+   (Small) values only, skip every Large-mode override from IMPLEMENT.web.md,
+   note the limitation in DESIGN.md, and tell the operator — Large is then a
+   code-only concern until the file is upgraded.
+3. Read `DESIGN.md` — the front matter is the identity token set, including any
+   trailing `#` comments that become Figma variable descriptions — and, on a
+   web project, `IMPLEMENT.web.md` — its `responsive` block is the Large-mode
+   source. Read `tokens.lock.json` if present. Resolve the **active phase**
+   first; everything below reads and writes that phase's entry and nothing else.
+4. Inspect the file: existing collections, variables, text styles
+   (`getLocalVariableCollectionsAsync` etc.). Match existing conventions.
+
+## Library-first: when the file already has variables
+
+If step 4 above found existing variable collections with defined values, this file
+came from a starter kit or boilerplate. The procedure below still applies, but the
+**write strategy changes from "create" to "restructure in place."**
+
+**Principles:**
+
+- **Do not delete the boilerplate's collections or variables.** Restructure by
+  renaming, moving, and adding — never by tearing down and rebuilding. Deleting
+  variables breaks any components or frames in the file that reference them.
+- **Rename** variables to match our naming convention. A variable named
+  `Colors/neutral/100` becomes `surface/secondary` (or whatever the confirmed
+  mapping says). Renaming preserves all existing bindings — any frame fill bound to
+  that variable still works, it just resolves under the new name.
+- **Reorganise into three collections** (Primitives, Colour, Scale) if the
+  boilerplate uses a different structure. Move variables between collections where
+  needed. If the boilerplate has a single flat collection, split it.
+- **Add** our primitives layer, semantic aliases, scale structure, and mode
+  configuration on top of the existing values. The starter kit may lack modes,
+  scopes, code syntax, or descriptions — add what is missing without disturbing
+  what works.
+- **Preserve components and frames** that reference existing variables. The point
+  of renaming rather than deleting is that the boilerplate's components (buttons,
+  cards, inputs) stay functional with the new token names.
+- **Record the original names** in `tokens.lock.json`'s `notes` array for
+  traceability:
+  ```json
+  "notes": [
+    "Library-first: restructured from 'Luxury E-com Design System Starter Kit'",
+    "Renamed: Colors/primary/500 → primitive/kit-primary → colors.primary",
+    "Renamed: Colors/neutral/100 → surface/secondary"
+  ]
+  ```
+
+**The procedure steps below still run in order.** For each collection (Primitives,
+Colour, Scale): if a variable already exists under its target name, update its
+value and properties (scopes, code syntax, description). If a variable exists
+under a boilerplate name that maps to this target, rename it first, then
+update. If no variable exists for this target, create it fresh. The result is
+the same three-collection structure whether the file started empty or
+pre-populated.
+
+## Write path (in order of preference)
+
+1. **Official Figma MCP `use_figma`** — primary, proven for: collections, modes,
+   COLOR/FLOAT/STRING variables, `VARIABLE_ALIAS`, scopes, `setVariableCodeSyntax`,
+   text styles, mode-pinned frames, value updates. Variable `description` uses the
+   same path (`variable.description = "…"`); not spike-verified, see below.
+2. **figma-console MCP** (if the user has it) — fallback only. Known quirks: verify
+   `figma.fileKey` before any write (navigate lies); delete via `figma_delete_node`.
+3. **Manual fallback** — never dead-end: print a formatted token sheet (name, value
+   per mode, scope, code syntax, description) the operator can enter by hand, plus
+   the checklist.
+
+## Variable descriptions
+
+Figma's per-variable **Description** field ("How to use this variable") is
+writable: `variable.description = "…"`. Set it on every create **and** every
+update — the same overwrite-from-code rule as values. A description typed
+directly in Figma does not survive the next push.
+
+**Source:** a trailing `#` comment on that token's YAML line in `DESIGN.md`.
+The design.md schema has no per-token description field, and a new YAML key
+would trip the linter. A comment is ignored by lint and by CSS emission, and
+is readable to an agent parsing the file as text.
+
+```yaml
+state-hover: "rgba(0, 0, 0, 0.04)"  # Neutral 4% overlay. Fill on interactive surfaces, not a text colour.
+```
+
+For a composite token (a typography entry, an `extensions` group), the comment
+sits on the parent key:
+
+```yaml
+display:  # Hero type. Grows at Large; the override lives in IMPLEMENT.web.md.
+  fontFamily: …
+```
+
+A nested property with its own comment wins over the parent for the Figma
+variable derived from that property (`type/display/size` reads the `fontSize`
+line, not `display:`).
+
+**Rules:**
+
+- Strip the `#` and trim. One sentence. This is a usage hint in a dense table,
+  not a dump of the DESIGN.md section.
+- No comment → set `description` to `""`. Do not invent a line from the prose.
+  Empty is honest; a guessed sentence is a second source of truth.
+- Descriptions are per-variable, not per-mode. Scale tokens with Small and
+  Large values share one description, sourced from DESIGN.md (identity), never
+  from IMPLEMENT.web.md.
+- Code syntax remains the name bridge. Description is metadata and is never
+  matched on.
+- Same `use_figma` path as `setVariableCodeSyntax`. If the assignment throws,
+  skip descriptions, record it in the lock `notes`, and continue — values,
+  scopes and code syntax still land.
+- `get_variable_defs` does **not** return descriptions. After the value
+  read-back in step 7, run a small read-only `use_figma` script that returns
+  `{ codeSyntax, description }` for local variables and check them against the
+  DESIGN.md comments. A description-only mismatch is reported, not a failed
+  push.
+
+## Procedure (small incremental calls — ≤10 logical ops each, return IDs every call)
+
+DESIGN.md has a `primitives` block (raw brand values) and a `colors` block (semantic
+roles that alias into primitives). Three collections cover both files.
+
+1. **Primitives collection** — **single mode**, named "Primitives". One variable per
+   `primitives.*` key: `brand-red` → `primitive/brand-red`. All values are literal
+   (no aliases — primitives are the bottom of the reference chain). Scopes: none
+   (primitives are referenced by semantic tokens, not used directly in designs).
+   **Code syntax always**: `WEB → var(--primitive-<kebab-name>)`.
+   **Description** from the YAML `#` comment, or `""`.
+2. **Colour collection** — **single mode**, named for the project's actual mode
+   (usually "Light", but name it for what the brand is, not what is assumed). One
+   variable per `colors.*` key: `fg-primary` → `fg/primary`, `surface-inverse` →
+   `surface/inverse`. A `"{primitives.x}"` value becomes a `VARIABLE_ALIAS` to the
+   corresponding Primitives collection variable; a `"{colors.x}"` value becomes a
+   `VARIABLE_ALIAS` within this collection; a literal stays literal. Scopes by role:
+   `FRAME_FILL, SHAPE_FILL` for `surface/*`, `TEXT_FILL` for `fg/*`, both for
+   `primary` and `accent`, `STROKE_COLOR` for `line/*`. The three `state/*` overlays
+   and `focus-ring` get all fill scopes — they land anywhere. **Code syntax always**:
+   `WEB → var(--<kebab-path>)`, the name anchor sync-tokens matches on.
+   **Description** from the YAML `#` comment, or `""`.
+3. **Scale collection** — **two modes, "Small" and "Large"**, holding `spacing`,
+   `rounded`, and the numeric half of `typography`. Base (Small) values come
+   from `DESIGN.md`; Large-mode values come from `IMPLEMENT.web.md`'s
+   `responsive` block. Mapping is described below. Scopes: `GAP, WIDTH_HEIGHT`
+   for `space/*`, `CORNER_RADIUS` for `radius/*`, `FONT_SIZE` / `LINE_HEIGHT` /
+   `LETTER_SPACING` for type. Code syntax as above. **Description** from the
+   YAML `#` comment, or `""`.
+4. **Text styles**: one per `typography` entry in `DESIGN.md`, named exactly
+   like the key. Bind `fontSize`, `lineHeight` and `letterSpacing` to their
+   Scale variables with `setBoundVariable`, so a single style resolves at both
+   widths. There are no `-lg` type styles — the Large-mode values come from
+   the Scale variables' Large mode, which is sourced from IMPLEMENT.web.md.
+   Follow the canonical font recipe: `listAvailableFontsAsync` to verify the
+   family/style string, `loadFontAsync`, then create. Brand font not available in
+   Figma → build the style with Inter at the correct size, and add "swap text styles
+   to <font> after installing it in Figma" to the human checklist.
+   *Unverified as of 2026-08:* if `setBoundVariable` on a text style fails, fall
+   back to two flat styles (`display` for Small, `display@large` for Large sourced
+   from IMPLEMENT.web.md), note it on the checklist, and record which path was
+   taken in the lock file's `notes`.
+5. **Token sheets** (the styleguide + machine read-point): three frames, split by
+   what varies:
+   - **"Tokens — Primitives"** — one row per primitive variable (swatch bound to the
+     variable + name label). Single frame, no mode complexity — primitives have one
+     mode.
+   - **"Tokens — Colour"** — one row per semantic colour variable (swatch + name +
+     alias annotation showing which primitive it points to). Single frame — colours
+     do not change by size.
+   - **"Tokens — Scale · Small"** — one row per scale/spacing/rounded variable, one
+     line per text style, all pinned to Small mode.
+   Clone → **"Tokens — Scale · Large"** →
+   `setExplicitVariableModeForCollection(scaleCollection, largeModeId)`.
+
+   The split makes it visually obvious that colour is size-independent and only scale
+   values have two modes. Screenshot all four sheets.
+6. **Specimen sheets** — designer-facing reference pages that show the design system
+   in context rather than as raw values. Create after the token sheets (which are
+   machine read-points), on a separate page named "Specimens". Layout reference:
+   `figma.com/design/ef1Dz0cIb3jcch5izjk2db/Templates?node-id=1-171`.
+
+   Three specimen frames:
+
+   **Colour specimens** — a grid of colour swatches, each showing:
+   - A filled rectangle bound to the semantic colour variable
+   - The token name (`primary`, `surface-secondary`)
+   - The primitive it aliases to (`→ brand-red`)
+   - The resolved hex value
+   - For `fg-*` tokens: a text sample on its natural background
+   - For contrast pairs: the contrast ratio (e.g. "4.8:1")
+
+   **Type specimens** — one row per typography style showing:
+   - The style name (`display`, `heading-1`, `body`)
+   - A sample sentence set in that style (use TONE-OF-VOICE.md register, not lorem)
+   - Size / weight / line-height annotation
+   - Both Small and Large sizes side by side (for styles that grow)
+
+   **Spacing and shape specimens** — a visual ruler showing:
+   - Each spacing step as a labelled gap
+   - The three radii applied to sample rectangles
+   - Small vs Large comparisons for steps that grow
+
+   Build these programmatically using `use_figma`. Bind swatches and text to the
+   actual variables so specimens stay live when tokens change. The token sheets
+   (step 5) are the machine verification layer; specimens are the human review
+   layer. Both exist.
+
+7. **Verify**: `get_variable_defs` on each token sheet node — every token must come
+   back, keyed by its code syntax, with the right resolved value per mode. Then a
+   small read-only `use_figma` script returning `{ codeSyntax, description }` for
+   local variables, checked against the DESIGN.md `#` comments. A
+   description-only mismatch is reported, not a failed push.
+8. **Write `tokens.lock.json`** beside `DESIGN.md`, into the active phase's entry
+   only. Shape and rules below. Timestamp from `date -u +%Y-%m-%dT%H:%M:%SZ`.
+
+## Responsive values live in IMPLEMENT.web.md
+
+The Scale collection still has two modes — Small and Large. What changed in
+2026-08 is where each mode's value comes from. **Base (Small) values come from
+`DESIGN.md`; Large-mode values come from `IMPLEMENT.web.md`'s `responsive`
+block.** One variable, two modes, two sources.
+
+The mapping:
+
+| Source | Figma variable | Mode |
+| --- | --- | --- |
+| `DESIGN.md → spacing.lg: 24px` | `space/lg` | Small |
+| `IMPLEMENT.web.md → responsive.spacing.lg."@large": 32px` | `space/lg` — same variable | Large |
+| `DESIGN.md → spacing.md: 16px` (no responsive entry) | `space/md` | **both**, identical value |
+| `DESIGN.md → typography.display.fontSize: 33px` | `type/display/size` | Small |
+| `IMPLEMENT.web.md → responsive.typography.display."@large".fontSize: 48px` | `type/display/size` — same variable | Large |
+
+Absence in `responsive` is meaningful: no override entry means the value is
+deliberately the same at both widths, so write the base value to both modes
+rather than leaving Large unset. An unset mode inherits nothing in Figma — it
+resolves empty and the sheet read-back in step 5 will catch it, which is the
+point of doing the read-back.
+
+## `tokens.lock.json`
+
+Machine-maintained, never hand-edited, and read only by tooling — the
+sync-tokens runbook diffs against it and `/project-check` reports on it. It is
+the record of what Figma actually holds, which is a different question from
+what DESIGN.md says.
+
+**Keyed by phase**, because a project can hold a frozen concepting library and a
+live detailed-design one at the same time, in different Figma files:
+
+```json
+{
+  "_meta": {
+    "schema": "prototype-tokens-lock-v3",
+    "activePhase": "detailed-design"
+  },
+  "phases": {
+    "concepting": {
+      "frozen": true,
+      "frozenAt": "2026-06-30T14:02:11Z",
+      "designTag": "design/concepting-final",
+      "fileKey": "aBc123…",
+      "collections": { "primitives": "VariableCollectionId:1:1", "colour": "VariableCollectionId:1:2", "scale": "VariableCollectionId:1:9" },
+      "modes": { "Primitives": "1:0", "Light": "2:0", "Small": "9:0", "Large": "9:1" },
+      "variables": { "primitives.brand-red": "VariableID:3:10", "colors.primary": "VariableID:3:41", "spacing.lg": "VariableID:3:88" },
+      "textStyles": { "display": "S:7f2a…" },
+      "tokenSheets": { "Primitives": "12:100", "Colour": "12:200", "Scale·Small": "12:340", "Scale·Large": "12:512" },
+      "values": {
+        "primitives.brand-red": { "Primitives": "#E8112D" },
+        "colors.primary": { "Light": "#E8112D" },
+        "spacing.lg": { "Small": "24px", "Large": "32px" },
+        "spacing.md": { "Small": "16px", "Large": "16px" }
+      },
+      "pushedAt": "2026-06-30T13:58:02Z",
+      "notes": []
+    },
+    "detailed-design": {
+      "frozen": false,
+      "fileKey": "xYz789…",
+      "…": "same shape, no frozenAt or designTag"
+    }
+  }
+}
+```
+
+`values` is the **full snapshot**, every token keyed by path then by mode, and it
+is what makes a three-way diff possible: without the previous values, a change in
+Figma and a change in code are indistinguishable from each other.
+
+Tokens listed under `spacing.lg` carry both modes even though the two mode
+values come from two different files (base from DESIGN.md, Large from
+IMPLEMENT.web.md). The lock file records Figma's shape, not either source
+file's.
+
+### Freezing a phase
+
+At a phase boundary the outgoing library stops being a live surface:
+
+1. Tag the repo at the current state of the design-system files (DESIGN.md,
+   and IMPLEMENT.web.md on a web project) — `design/<phase>-final` — and
+   record the tag as `designTag`. This is the point of the tag: a year later
+   the frozen library and the files that produced it can still be lined up.
+2. Set `frozen: true` and `frozenAt` to the tag time.
+3. Point `_meta.activePhase` at the new phase and create its entry, pushing to a
+   **new Figma file**. Freezing does not mean editing in place.
+
+**Never write to a frozen entry, and never report drift against one.** A frozen
+library diverging from DESIGN.md or IMPLEMENT.web.md is the expected and
+correct end state — the source files keep moving and the library does not.
+Reporting that as drift trains people to ignore drift reports, which costs
+more than the report is worth.
+
+## Known failure modes (learned the hard way — don't relearn)
+
+- **The remote MCP's font list is NOT the user's font list.** `listAvailableFontsAsync`
+  in the connector environment doesn't see fonts installed on the operator's machine
+  or uploaded to their org — brand faces will read as missing even when designers use
+  them daily in the same file. Expect the Inter-placeholder path to be the norm, not
+  the exception; the swap always goes on the human checklist.
+
+- **Mode ids belong to their own collection.** `setValueForMode` with another
+  collection's mode id throws `mode with id … not defined for variable`. Always
+  resolve the mode id from the variable's own `variableCollectionId`.
+- Failed `use_figma` scripts are **atomic** — nothing applied. Read the error, fix,
+  retry once; don't blind-retry.
+- COLOR variable values take `{r,g,b,a}` (0–1); paints take `{r,g,b}`. Don't mix.
+- `"Semi Bold"` not `"SemiBold"` — verify font style strings, never guess.
+
+## Always-human steps (no API exists — print, don't attempt)
+
+- Installing/uploading brand fonts into Figma (org font upload is an admin action).
+- **Publishing the library** so other project files can use it (Figma UI button).
+- Restyling the token sheets to taste.

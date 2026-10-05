@@ -1,0 +1,26 @@
+---
+description: {{PROJECT_NAME}} prototype — how AI agents work with this project
+alwaysApply: true
+---
+
+# {{PROJECT_NAME}} — Agent rule
+
+Start by reading [`AGENTS.md`](../../AGENTS.md) at the repo root. It is the
+canonical spec-for-agents for this project — project context, stack, conventions,
+design-token pipeline, and how to work with `DESIGN.md` and `IMPLEMENT.web.md`.
+
+## When to follow a maintenance runbook
+
+When the user's intent matches one of these, read the named runbook in full
+and follow it — do not improvise.
+
+| Intent | Runbook |
+| --- | --- |
+| Sync tokens, propagate a `DESIGN.md` or `IMPLEMENT.web.md` change, rebuild the CSS/Tailwind theme, refresh the Figma library from code | [`.agents/runbooks/sync-tokens.md`](../../.agents/runbooks/sync-tokens.md) |
+| Push tokens to Figma, create or rebuild the design library, add a Figma file to a project that has never had one | [`.agents/runbooks/figma-library-push.md`](../../.agents/runbooks/figma-library-push.md) |
+
+## Capability boundary
+
+The runbooks assume the agent can execute shell commands, run `npx`, and call
+the Figma MCP. In Cursor, the Cursor agent has all three. Follow the runbook
+step by step; do not paraphrase or shortcut.
